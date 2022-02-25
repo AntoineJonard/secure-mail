@@ -1,4 +1,10 @@
-package mailing;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Package1;
+
 /**
  *
  * @author imino
@@ -31,10 +37,11 @@ public class Mailsendreceivetest{
  public static void sendmessage(String user, String password, String destination){
       Properties properties = new Properties();  
  
-           properties.put("mail.smtp.auth", "true");
-           properties.put("mail.smtp.starttls.enable", "true");
-           properties.put("mail.smtp.host", "smtp.outlook.com");
-           properties.put("mail.smtp.port", "587");
+      properties.put("mail.smtp.host", "smtp.gmail.com");
+      properties.put("mail.smtp.socketFactory.port", "465");
+      properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+      properties.put("mail.smtp.auth", "true");
+      properties.put("mail.smtp.port", "465");
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(user,password);
@@ -58,10 +65,11 @@ try{
  public static void sendmessagewithattachement(String user, String password, String destination, String attachement_path){
       Properties properties = new Properties();  
  
-              properties.put("mail.smtp.auth", "true");
-           properties.put("mail.smtp.starttls.enable", "true");
-           properties.put("mail.smtp.host", "smtp.outlook.com");
-           properties.put("mail.smtp.port", "587");
+      properties.put("mail.smtp.host", "smtp.gmail.com");
+      properties.put("mail.smtp.socketFactory.port", "465");
+      properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+      properties.put("mail.smtp.auth", "true");
+      properties.put("mail.smtp.port", "465");
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(user,password);
@@ -72,11 +80,11 @@ try{
       MimeMessage message=new MimeMessage(session);
      message.setFrom(user);
      message.addRecipient(Message.RecipientType.TO, new InternetAddress(destination));
-     message.setSubject("mon premier email avec piece jointe..");
+     message.setSubject("Oui oui baguette!");
      
      Multipart myemailcontent=new MimeMultipart();
      MimeBodyPart bodypart=new MimeBodyPart();
-     bodypart.setText("ceci est un test de mail avec piece jointe ...");
+     bodypart.setText("Omelette au fromage!");
 
      
      
@@ -102,12 +110,11 @@ try{
         Properties properties = new Properties();
  
         // server setting (it can be pop3 too
-         properties.put("mail.imap.host", "outlook.office365.com");
-         properties.put("mail.imap.port", "993");
-         properties.setProperty("mail.imap.socketFactory.class",
-         "javax.net.ssl.SSLSocketFactory");
-         properties.setProperty("mail.imap.socketFactory.fallback","false");
-         properties.setProperty("mail.imap.socketFactory.port", "993");
+        properties.put("mail.imap.host", "imap.gmail.com");
+        properties.put("mail.imap.port", "993");
+        properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        properties.setProperty("mail.imap.socketFactory.fallback","false");
+        properties.setProperty("mail.imap.socketFactory.port", "993");
          
          
         Session session = Session.getDefaultInstance(properties);
@@ -147,7 +154,7 @@ try{
                             // this part is attachment
                             String fileName = part.getFileName();
                             attachFiles += fileName + ", ";
-                            part.saveFile("Myfiles" + File.separator + fileName); // le dossier Myfiles Ã  crÃ©er dans votre projet 
+                            part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancée\\TP" + File.separator + fileName); // le dossier Myfiles à créer dans votre projet 
                             
                             
                         } else {
@@ -195,25 +202,27 @@ try{
  
       
  
-   public static void main(String[] args)  {  
+ public static void main(String[] args)  {  
   
-	   //String host = "outlook.office365.com";//change accordingly  
-	   String username= "cryptocours2022@outlook.fr";  
-	   String password= "mypasswordforcryptocourse2022$";//change accordingly  
-	   //  sendmessage(username, password);
+  //String host = "smtp.gmail.com";//change accordingly  
+  String username= "cryptoav.tp@gmail.com";  
+  String password= "vivelacrypto";//change accordingly  
+  //sendmessage(username, password);
   
-	   String path="C:\\Users\\imino\\OneDrive\\Bureau\\img.pdf";
+   String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancée\\TP\\Ressources\\Image.png";
    
-	   sendmessagewithattachement(username, password,username,path);
+     sendmessagewithattachement(username, password,username,path);
      
-	   System.out.println("message sent ...");
+     System.out.println("message sent ...");
      
-	   Scanner sc=new Scanner(System.in);
-	   System.out.println("type something ....");
+     Scanner sc=new Scanner(System.in);
+     System.out.println("type something ....");
      
-	   sc.nextLine();
+     sc.nextLine();
      
-	   downloadEmailAttachments(username, password);
+     downloadEmailAttachments(username, password);
+     
+     System.out.println("The end!");
   
- 	}  
+}  
 }
