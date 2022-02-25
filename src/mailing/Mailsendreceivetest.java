@@ -154,8 +154,8 @@ try{
                             // this part is attachment
                             String fileName = part.getFileName();
                             attachFiles += fileName + ", ";
-                            part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP" + File.separator + fileName); // le dossier Myfiles ï¿½ crï¿½er dans votre projet 
-                            
+                            //part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP" + File.separator + fileName); // le dossier Myfiles ï¿½ crï¿½er dans votre projet 
+                            part.saveFile("C:\\Users\\Clemoix\\Desktop\\4A Ingénieur\\Période 3\\Cryptographie avancé\\Youcef Imine\\TP\\Image.png" + File.separator + fileName);
                             
                         } else {
                             // this part may be the message content
@@ -209,7 +209,8 @@ try{
   String password= "vivelacrypto";//change accordingly  
   //sendmessage(username, password);
   
-   String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP\\Ressources\\Image.png";
+   //String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP\\Ressources\\Image.png";
+   String path="C:\\Users\\Clemoix\\Desktop\\4A Ingénieur\\Période 3\\Cryptographie avancé\\Youcef Imine\\TP\\Image.png";
    
      sendmessagewithattachement(username, password,username,path);
      
