@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Package1;
+package mailing;
 
 /**
  *
@@ -154,7 +154,7 @@ try{
                             // this part is attachment
                             String fileName = part.getFileName();
                             attachFiles += fileName + ", ";
-                            part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancée\\TP" + File.separator + fileName); // le dossier Myfiles à créer dans votre projet 
+                            part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP" + File.separator + fileName); // le dossier Myfiles ï¿½ crï¿½er dans votre projet 
                             
                             
                         } else {
@@ -209,7 +209,7 @@ try{
   String password= "vivelacrypto";//change accordingly  
   //sendmessage(username, password);
   
-   String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancée\\TP\\Ressources\\Image.png";
+   String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avancï¿½e\\TP\\Ressources\\Image.png";
    
      sendmessagewithattachement(username, password,username,path);
      
