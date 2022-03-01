@@ -161,7 +161,6 @@ try{
                             part.saveFile(path);
                             System.out.println("file saved in "+path);
                             
-                            
                         } else {
                             // this part may be the message content
                             messageContent = part.getContent().toString();
