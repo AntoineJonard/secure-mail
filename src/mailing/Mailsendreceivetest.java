@@ -9,7 +9,8 @@ package mailing;
  *
  * @author imino
  */
-import java.io.IOException;  
+import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;  
 import javax.mail.Folder;  
 import javax.mail.Message;  
@@ -154,7 +155,11 @@ try{
                             // this part is attachment
                             String fileName = part.getFileName();
                             attachFiles += fileName + ", ";
-                            part.saveFile("C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avanc�e\\TP" + File.separator + fileName); // le dossier Myfiles � cr�er dans votre projet 
+                            String separator = System.getProperty("file.separator");
+                            URL url = Mailsendreceivetest.class.getResource("MyFiles");
+                            String path = "MyFiles"+File.separator+fileName;
+                            part.saveFile(path);
+                            System.out.println("file saved in "+path);
                             
                             
                         } else {
@@ -209,7 +214,9 @@ try{
   String password= "vivelacrypto";//change accordingly  
   //sendmessage(username, password);
   
-   String path="C:\\Users\\bapti\\Documents\\Ecole\\4A\\Cryptographie Avanc�e\\TP\\Ressources\\Image.png";
+  URL url = Mailsendreceivetest.class.getResource("OmegaTurbinoSecretFile");
+  
+   String path=url.getPath();
    
      sendmessagewithattachement(username, password,username,path);
      
