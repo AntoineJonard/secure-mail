@@ -33,6 +33,10 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();
+
+			initRootLayout();
+
+			showConnectionView();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -59,7 +63,7 @@ public class Main extends Application {
 	
 	public void showConnectionView() {
 		FXMLLoader loader = new FXMLLoader();
-		loader.setLocation(Main.class.getResource("../view/Connexion.fxml"));
+		loader.setLocation(Main.class.getResource("../view/Connection.fxml"));
 		
 		Controller controller = new ConnectionController();
 		loader.setController(controller);
