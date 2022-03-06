@@ -11,10 +11,8 @@ import controller.Controller;
 import controller.MailboxController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import mailing.Mailsendreceivetest;
@@ -36,6 +34,11 @@ public class Main extends Application {
 
 	private Properties receiveProperties;
 	private Properties sendProperties;
+	private Store store;
+
+	private Message[] emails;
+
+	private boolean connected = false;
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -57,6 +60,14 @@ public class Main extends Application {
 			showConnectionView();
 		} catch(Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void stop() throws MessagingException {
+		if (store != null){
+			store.close();
+			connected = false;
 		}
 	}
 	
@@ -133,7 +144,7 @@ public class Main extends Application {
 		rootLayout.setCenter(mailboxLayout);
 	}
 
-	public boolean setUser(User user) {
+	public boolean connectAs(User user) {
 		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
@@ -141,24 +152,57 @@ public class Main extends Application {
 		try {
 			// connects to the message store imap or pop3
 			//     Store store = session.getStore("pop3");
-			Store store = session.getStore("imap");
+			store = session.getStore("imap");
 
 			store.connect(user.getEmail(), user.getPassword());
-
-			store.close();
 
 		} catch (NoSuchProviderException ex) {
 			System.out.println("No provider for imap.");
 			ex.printStackTrace();
+
+			return false;
 		} catch (MessagingException ex) {
 			System.out.println("Could not connect to the message store");
 
 			return false;
 		}
+
+		connected = true;
+
+		return true;
+	}
+
+	public boolean downloadMails(){
+		if (connected){
+			try {
+				// opens the inbox folder
+				Folder folderInbox = store.getFolder("INBOX");
+				folderInbox.open(Folder.READ_ONLY);
+				// fetches new messages from server
+				emails = folderInbox.getMessages();
+
+				// disconnect
+				folderInbox.close(false);
+
+			} catch (NoSuchProviderException ex) {
+				System.out.println("No provider for imap.");
+				ex.printStackTrace();
+				return false;
+			} catch (MessagingException ex) {
+				System.out.println("Could not connect to the message store");
+				ex.printStackTrace();
+				return false;
+			}
+		}
+
 		return true;
 	}
 
 	public User getUser() {
 		return user;
+	}
+
+	public Message[] getEmails() {
+		return emails;
 	}
 }

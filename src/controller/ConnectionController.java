@@ -17,7 +17,7 @@ public class ConnectionController extends Controller {
     private void connect(MouseEvent event) {
         User user = new User(email.getText(),password.getText());
 
-        if (getMain().setUser(user)){
+        if (getMain().connectAs(user)){
             getMain().showMailboxView();
         }else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
