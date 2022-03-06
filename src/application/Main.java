@@ -20,6 +20,8 @@ public class Main extends Application {
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private BorderPane rootLayout;
+
+	private User user;
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -95,5 +97,9 @@ public class Main extends Application {
 		} 
 		
 		rootLayout.setCenter(mailboxLayout);
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 }
