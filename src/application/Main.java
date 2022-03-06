@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import mailing.Mailsendreceivetest;
 
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
@@ -35,6 +34,7 @@ public class Main extends Application {
 	private Properties receiveProperties;
 	private Properties sendProperties;
 	private Store store;
+	private Folder folderInbox;
 
 	private Message[] emails;
 
@@ -66,6 +66,7 @@ public class Main extends Application {
 	@Override
 	public void stop() throws MessagingException {
 		if (store != null){
+			folderInbox.close(false);
 			store.close();
 			connected = false;
 		}
@@ -145,7 +146,7 @@ public class Main extends Application {
 	}
 
 	public boolean connectAs(User user) {
-		this.user = user;
+		this.user = new User("cryptoav.tp@gmail.com","vivelacrypto");
 
 		Session session = Session.getDefaultInstance(receiveProperties);
 
@@ -154,7 +155,9 @@ public class Main extends Application {
 			//     Store store = session.getStore("pop3");
 			store = session.getStore("imap");
 
-			store.connect(user.getEmail(), user.getPassword());
+			store.connect(this.user.getEmail(), this.user.getPassword());
+
+			store.close();
 
 		} catch (NoSuchProviderException ex) {
 			System.out.println("No provider for imap.");
@@ -174,15 +177,18 @@ public class Main extends Application {
 
 	public boolean downloadMails(){
 		if (connected){
+
+			Session session = Session.getDefaultInstance(receiveProperties);
+
 			try {
+				store = session.getStore("imap");
+
+				store.connect(user.getEmail(), user.getPassword());
 				// opens the inbox folder
-				Folder folderInbox = store.getFolder("INBOX");
+				folderInbox = store.getFolder("INBOX");
 				folderInbox.open(Folder.READ_ONLY);
 				// fetches new messages from server
 				emails = folderInbox.getMessages();
-
-				// disconnect
-				folderInbox.close(false);
 
 			} catch (NoSuchProviderException ex) {
 				System.out.println("No provider for imap.");

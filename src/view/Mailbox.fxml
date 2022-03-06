@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox alignment="CENTER">
          <children>
@@ -39,7 +39,7 @@
                   <Insets right="20.0" />
                </HBox.margin>
             </Label>
-            <Label fx:id="newMailCpt" text="(6 new mails)">
+            <Label fx:id="newMailCpt" text="(6 mails)">
                <font>
                   <Font size="18.0" />
                </font>
