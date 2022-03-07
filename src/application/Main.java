@@ -18,7 +18,7 @@ import javax.mail.*;
 
 public class Main extends Application {
 	
-	private Stage primaryStage;
+	private static Stage primaryStage;
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private VBox mailLayout;
@@ -30,7 +30,6 @@ public class Main extends Application {
 
 	private Properties receiveProperties;
 	private Properties sendProperties;
-	private Store store;
 	private Folder folderInbox;
 
 	private Message[] emails;
@@ -40,8 +39,8 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		
-		this.primaryStage = primaryStage;
-		this.primaryStage.setTitle("Secure Mail");
+		Main.primaryStage = primaryStage;
+		Main.primaryStage.setTitle("Secure Mail");
 
 		initProperties();
 		
@@ -62,11 +61,8 @@ public class Main extends Application {
 
 	@Override
 	public void stop() throws MessagingException {
-		if (store != null){
-			folderInbox.close(false);
-			store.close();
-			connected = false;
-		}
+		folderInbox.close();
+		connected = false;
 	}
 	
 	public static void main(String[] args) {
@@ -168,7 +164,7 @@ public class Main extends Application {
 		try {
 			// connects to the message store imap or pop3
 			//     Store store = session.getStore("pop3");
-			store = session.getStore("imap");
+			Store store = session.getStore("imap");
 
 			store.connect(this.user.getEmail(), this.user.getPassword());
 
@@ -196,13 +192,15 @@ public class Main extends Application {
 			Session session = Session.getDefaultInstance(receiveProperties);
 
 			try {
-				store = session.getStore("imap");
+				Store store = session.getStore("imap");
 
 				store.connect(user.getEmail(), user.getPassword());
-				// opens the inbox folder
+
+				if (folderInbox!= null && folderInbox.isOpen())
+					folderInbox.close();
 				folderInbox = store.getFolder("INBOX");
 				folderInbox.open(Folder.READ_ONLY);
-				// fetches new messages from server
+
 				emails = folderInbox.getMessages();
 
 			} catch (NoSuchProviderException ex) {
@@ -225,5 +223,9 @@ public class Main extends Application {
 
 	public Message[] getEmails() {
 		return emails;
+	}
+
+	public static Stage getPrimaryStage() {
+		return primaryStage;
 	}
 }

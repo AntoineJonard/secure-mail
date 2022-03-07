@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <StackPane prefHeight="150.0" prefWidth="200.0">
          <children>
@@ -67,7 +67,7 @@
                   </Label>
                </children>
             </HBox>
-            <HBox alignment="CENTER" layoutX="20.0" layoutY="10.0" maxWidth="150.0" onMouseClicked="#new_mail" style="-fx-background-color: #FAC437; -fx-background-radius: 25;" StackPane.alignment="CENTER_RIGHT">
+            <HBox alignment="CENTER" layoutX="20.0" layoutY="10.0" maxWidth="175.0" onMouseClicked="#new_mail" style="-fx-background-color: #FAC437; -fx-background-radius: 25;" StackPane.alignment="CENTER_RIGHT">
                <children>
                   <ImageView fitHeight="34.0" fitWidth="31.0" onMouseClicked="#refresh" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -77,9 +77,9 @@
                         <Insets right="8.0" />
                      </HBox.margin>
                   </ImageView>
-                  <Label fx:id="user1" text="New mail">
+                  <Label fx:id="user1" text="write a mail">
                      <font>
-                        <Font size="24.0" />
+                        <Font size="20.0" />
                      </font>
                   </Label>
                </children>

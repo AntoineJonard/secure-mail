@@ -24,29 +24,16 @@ public class MailboxController extends Controller{
 
     @FXML
     private void initialize() {
-
-        user.setText(getMain().getUser().getEmail());
-
-        if (getMain().downloadMails()){
-            newMailCpt.setText("("+getMain().getEmails().length+" emails)");
-
-            ObservableList<Message> messages = FXCollections.observableArrayList(getMain().getEmails());
-            Collections.reverse(messages);
-            emails.setItems(messages);
-            emails.setCellFactory(messageListView -> new MessageFormatCell());
-
-        }else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Impossible to download emails");
-            alert.setContentText("Maybe check your connection.");
-            alert.showAndWait();
-        }
+        getMails();
     }
-    
+
     @FXML
     private void refresh() {
-    	user.setText(getMain().getUser().getEmail());
+        getMails();
+    }
+
+    private void getMails() {
+        user.setText(getMain().getUser().getEmail());
 
         if (getMain().downloadMails()){
             newMailCpt.setText("("+getMain().getEmails().length+" emails)");
