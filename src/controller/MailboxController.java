@@ -9,6 +9,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
+import java.util.Collections;
 
 import javax.mail.Message;
 
@@ -30,6 +31,7 @@ public class MailboxController extends Controller{
             newMailCpt.setText("("+getMain().getEmails().length+" emails)");
 
             ObservableList<Message> messages = FXCollections.observableArrayList(getMain().getEmails());
+            Collections.reverse(messages);
             emails.setItems(messages);
             emails.setCellFactory(messageListView -> new MessageFormatCell());
 
@@ -50,6 +52,7 @@ public class MailboxController extends Controller{
             newMailCpt.setText("("+getMain().getEmails().length+" emails)");
 
             ObservableList<Message> messages = FXCollections.observableArrayList(getMain().getEmails());
+            Collections.reverse(messages);
             emails.setItems(messages);
             emails.setCellFactory(messageListView -> new MessageFormatCell());
 
@@ -60,5 +63,10 @@ public class MailboxController extends Controller{
             alert.setContentText("Maybe check your connection.");
             alert.showAndWait();
         }
+    }
+    
+    @FXML
+    private void new_mail() {
+    	
     }
 }
