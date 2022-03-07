@@ -1,6 +1,7 @@
 package controller;
 
 import application.Main;
+import javafx.fxml.FXML;
 
 public abstract class Controller {
 
@@ -12,6 +13,10 @@ public abstract class Controller {
 
 	public void setMain(Main main) {
 		this.main = main;
+	}
+
+	@FXML
+	private void initialize() {
 	}
 	
 }
