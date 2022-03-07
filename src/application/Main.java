@@ -21,6 +21,7 @@ public class Main extends Application {
 	private Stage primaryStage;
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
+	private VBox mailLayout;
 	private BorderPane rootLayout;
 
 	private User user;
@@ -47,7 +48,7 @@ public class Main extends Application {
 		try {
 			BorderPane root = new BorderPane();
 			Scene scene = new Scene(root,400,400);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			//scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
@@ -121,6 +122,24 @@ public class Main extends Application {
 		} 
 		
 		rootLayout.setCenter(connectionLayout);
+	}
+	
+	public void showMailView() {
+		FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(Main.class.getResource("../view/Mail.fxml"));
+		
+		Controller controller = new MailboxController();
+		loader.setController(controller);
+		controller.setMain(this);
+		
+		try {
+			mailLayout = loader.load();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		rootLayout.setCenter(mailboxLayout);
 	}
 	
 	public void showMailboxView() {
