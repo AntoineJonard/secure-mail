@@ -40,9 +40,9 @@ public class MessageFormatCell extends ListCell<Message> {
             setText(from +" [ "+subject+" ] \t"+sentDate);
 
             if (message_seen){
-                setFont(Font.font(null, FontWeight.BOLD,13));
-            }else {
                 setFont(Font.font(null, FontWeight.NORMAL,13));
+            }else {
+                setFont(Font.font(null, FontWeight.BOLD,13));
             }
         }
 
