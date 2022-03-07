@@ -1,8 +1,6 @@
 package application;
 	
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -17,8 +15,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 import javax.mail.*;
-import javax.mail.internet.MimeBodyPart;
-
 
 public class Main extends Application {
 	
