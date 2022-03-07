@@ -3,6 +3,8 @@
 #
 
 tomcat
+bin
+out
 
 #
 # Default excludes
