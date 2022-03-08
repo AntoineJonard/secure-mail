@@ -7,19 +7,19 @@ import javafx.scene.input.MouseEvent;
 public class SendMailController extends Controller {
 
 	@FXML
-	private TextField Reciptient;
+	private TextField recipient;
 	@FXML
-	private TextField Subject;
+	private TextField subject;
 	@FXML 
-	private TextField Message;
+	private TextField message;
 	
 	@FXML
-	private void SendMail(MouseEvent event) {
+	private void send(MouseEvent event) {
 		
 	}
 	
 	@FXML
-	private void AddAttach(MouseEvent event) {
+	private void attach(MouseEvent event) {
 		
 	}
 }

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<VBox alignment="CENTER" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Label text="Secure Mail">
          <font>
@@ -38,7 +38,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="Recipient" alignment="TOP_LEFT" promptText="Recipient">
+                  <TextField fx:id="recipient" alignment="TOP_LEFT" promptText="Recipient">
                      <font>
                         <Font size="18.0" />
                      </font>
@@ -55,7 +55,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="Subject" promptText="Subject">
+                  <TextField fx:id="subject" promptText="Subject">
                      <font>
                         <Font size="18.0" />
                      </font>
@@ -69,7 +69,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <Button fx:id="attachmentButton" mnemonicParsing="false" prefHeight="0.0" prefWidth="0.0" text="+">
+                  <Button fx:id="attachmentButton" mnemonicParsing="false" onMouseClicked="#attach" prefHeight="0.0" prefWidth="0.0" text="+">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
@@ -92,7 +92,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="Message" alignment="TOP_LEFT" prefHeight="182.0" prefWidth="580.0" promptText="Message">
+                  <TextField fx:id="message" alignment="TOP_LEFT" prefHeight="182.0" prefWidth="580.0" promptText="Message">
                      <font>
                         <Font size="18.0" />
                      </font>

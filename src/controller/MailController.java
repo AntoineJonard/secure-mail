@@ -37,8 +37,8 @@ public class MailController extends Controller{
 	@FXML
 	private Label nbAttachments;
 	
-	private Message mail;
-    private List<MimeBodyPart> attachments;
+	private final Message mail;
+    private final List<MimeBodyPart> attachments;
 
     public MailController(Message mail) {
 		super();

@@ -7,6 +7,7 @@ import java.util.Properties;
 import controller.ConnectionController;
 import controller.Controller;
 import controller.MailboxController;
+import controller.SendMailController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -22,6 +23,7 @@ public class Main extends Application {
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private VBox mailLayout;
+	private VBox sendMailLayout;
 	private BorderPane rootLayout;
 
 	private User user;
@@ -154,6 +156,24 @@ public class Main extends Application {
 		} 
 		
 		rootLayout.setCenter(mailboxLayout);
+	}
+
+	public void showSendMail() {
+		FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(Main.class.getResource("../view/SendMail.fxml"));
+
+		Controller controller = new SendMailController();
+		loader.setController(controller);
+		controller.setMain(this);
+
+		try {
+			sendMailLayout = loader.load();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		rootLayout.setCenter(sendMailLayout);
 	}
 
 	public boolean connectAs(User user) {
