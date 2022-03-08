@@ -163,6 +163,8 @@ public class Main extends Application {
 			loader.setLocation(Main.class.getResource("../view/SendMail.fxml"));
 
 			Controller controller = new SendMailController();
+			controller.setMain(this);
+
 			loader.setController(controller);
 
 			Scene scene = new Scene(loader.load(), 900, 600);

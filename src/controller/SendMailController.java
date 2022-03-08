@@ -57,33 +57,52 @@ public class SendMailController extends Controller {
 
 	@FXML
 	private void send(MouseEvent event) {
-		try {
-			mail.setFrom(getMain().getUser().getEmail());
-			mail.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient.getText()));
-			mail.setSubject(subject.getText());
 
-			Multipart myemailcontent = new MimeMultipart();
-			MimeBodyPart bodypart = new MimeBodyPart();
-			bodypart.setText(message.getText());
-
-
-			MimeBodyPart attachementfile = new MimeBodyPart();
-			for (String attachement_path : attachmentsPaths)
-				attachementfile.attachFile(attachement_path);
-			myemailcontent.addBodyPart(bodypart);
-			myemailcontent.addBodyPart(attachementfile);
-			mail.setContent(myemailcontent);
-			Transport.send(mail);
-
-
-		} catch (MessagingException | IOException e) {
-			e.printStackTrace();
-
+		if (
+				subject.getText().isEmpty()
+				|| recipient.getText().isEmpty()
+				|| message.getText().isEmpty()
+		) {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Error");
-			alert.setHeaderText("Impossible to send mail");
-			alert.setContentText("Maybe check that your attachments exists on your system and that all fields have correct value.");
+			alert.setTitle("Field are not valids");
+			alert.setHeaderText("Impossible to send mail with empty fields");
+			alert.setContentText("Please enter a recipient, a subject, and a message.");
 			alert.showAndWait();
+		}else {
+			try {
+				mail.setFrom(getMain().getUser().getEmail());
+				mail.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient.getText()));
+				mail.setSubject(subject.getText());
+
+				Multipart myemailcontent = new MimeMultipart();
+				MimeBodyPart bodypart = new MimeBodyPart();
+				bodypart.setText(message.getText());
+
+				if (!attachmentsPaths.isEmpty()){
+					MimeBodyPart attachementfile = new MimeBodyPart();
+					for (String attachement_path : attachmentsPaths)
+						attachementfile.attachFile(attachement_path);
+					myemailcontent.addBodyPart(bodypart);
+					myemailcontent.addBodyPart(attachementfile);
+				}
+
+				mail.setContent(myemailcontent);
+				Transport.send(mail);
+
+				Alert alert = new Alert(Alert.AlertType.INFORMATION);
+				alert.setTitle("Email sent");
+				alert.setHeaderText("Your email successfully reached its destination");
+				alert.showAndWait();
+
+			} catch (MessagingException | IOException e) {
+				e.printStackTrace();
+
+				Alert alert = new Alert(Alert.AlertType.ERROR);
+				alert.setTitle("Error");
+				alert.setHeaderText("Impossible to send mail");
+				alert.setContentText("Maybe check that your attachments exists on your system and that all fields have correct value.");
+				alert.showAndWait();
+			}
 		}
 	}
 	
