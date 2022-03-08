@@ -100,6 +100,7 @@ public class MailController extends Controller{
     @FXML
     private void download(MouseEvent event)  {
         DirectoryChooser dirChooser = new DirectoryChooser();
+        dirChooser.setTitle("Select download directory");
         File chosenDir = dirChooser.showDialog(Main.getPrimaryStage());
         for (MimeBodyPart part : attachments){
             try {

@@ -14,6 +14,12 @@ public class ConnectionController extends Controller {
     private TextField password;
 
     @FXML
+    private void initialize() {
+        email.setText("cryptoav.tp@gmail.com");
+        password.setText("vivelacrypto");
+    }
+
+    @FXML
     private void connect(MouseEvent event) {
         User user = new User(email.getText(),password.getText());
 

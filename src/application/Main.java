@@ -3,11 +3,10 @@ package application;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import controller.ConnectionController;
-import controller.Controller;
-import controller.MailboxController;
-import controller.SendMailController;
+import controller.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -159,25 +158,26 @@ public class Main extends Application {
 	}
 
 	public void showSendMail() {
-		FXMLLoader loader = new FXMLLoader();
-		loader.setLocation(Main.class.getResource("../view/SendMail.fxml"));
-
-		Controller controller = new SendMailController();
-		loader.setController(controller);
-		controller.setMain(this);
-
 		try {
-			sendMailLayout = loader.load();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			FXMLLoader loader = new FXMLLoader();
+			loader.setLocation(Main.class.getResource("../view/SendMail.fxml"));
 
-		rootLayout.setCenter(sendMailLayout);
+			Controller controller = new SendMailController();
+			loader.setController(controller);
+
+			Scene scene = new Scene(loader.load(), 900, 600);
+			Stage stage = new Stage();
+			stage.setTitle("Write a mail");
+			stage.setScene(scene);
+			stage.show();
+		} catch (IOException e) {
+			Logger logger = Logger.getLogger(getClass().getName());
+			logger.log(Level.SEVERE, "Failed to create new Window.", e);
+		}
 	}
 
 	public boolean connectAs(User user) {
-		this.user = new User("cryptoav.tp@gmail.com","vivelacrypto");
+		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
 
@@ -247,5 +247,9 @@ public class Main extends Application {
 
 	public static Stage getPrimaryStage() {
 		return primaryStage;
+	}
+
+	public Properties getSendProperties() {
+		return sendProperties;
 	}
 }
