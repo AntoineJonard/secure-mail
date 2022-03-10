@@ -9,19 +9,22 @@ package mailing;
 import IBE.IBEBasicIdent;
 import IBE.KeyPair;
 import IBE.SettingParameters;
+import RSAFAST.AsymmetricCryptography;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,14 +57,17 @@ public class HttpServeur {
             System.out.println("MSK:" + sp.getMsk());
             System.out.println("---------------------------------");
 
-
             HttpServer server = HttpServer.create(s, 1000);
             System.out.println(server.getAddress());
+
+            // Service to get public parameters
             server.createContext("/servicePp", new HttpHandler() {
                 public void handle(HttpExchange he) throws IOException {
                     byte[] bytes = getObjectBytes(sp.getPp());
                     assert bytes != null;
                     he.sendResponseHeaders(200, bytes.length);
+
+                    // Sending plublic parameters to client
                     OutputStream os = he.getResponseBody();
                     os.write(bytes);
                     System.out.println("Public parameters sent ("+ Arrays.toString(bytes) +")");
@@ -69,16 +75,32 @@ public class HttpServeur {
                 }
             });
 
-
+            // Service to get secret key generated
             server.createContext("/serviceSk", new HttpHandler() {
                 public void handle(HttpExchange he) throws IOException {
 
+                    // parameters from client
                     String parameters = he.getRequestURI().getQuery();
 
+                    //email parameter
                     String emailId = queryToMap(parameters).get("email");
 
                     System.out.println("PK:" + emailId);
 
+                    // Output stream to retrieve public key
+                    ObjectInputStream objectIn = new ObjectInputStream(he.getRequestBody());
+
+                    PublicKey pk = null;
+
+                    try {
+                        pk = (PublicKey) objectIn.readObject();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.println("Public key" + pk.toString());
+
+                    // Generation of IBE secret key depending on the email id
                     System.out.println("Key generation .....");
                     KeyPair keys = null; // genération d'une paire de clefs correspondante à id
                     try {
@@ -89,7 +111,22 @@ public class HttpServeur {
 
                     System.out.println("SK:" + keys.getSk());
 
-                    byte[] skBytes = keys.getSk().toBytes();
+                    // Encryption of secret key with public key of the client before sending to client
+                    AsymmetricCryptography rsa = null;
+                    try {
+                        rsa = new AsymmetricCryptography();
+                    } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                        e.printStackTrace();
+                    }
+
+                    byte[] skBytes = null;
+                    try {
+                        skBytes = rsa.encryptBytes(keys.getSk().toBytes(),pk);
+                    } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Sending encrypted public key to client
                     he.sendResponseHeaders(200, skBytes.length);
                     OutputStream os = he.getResponseBody();
                     os.write(skBytes);
