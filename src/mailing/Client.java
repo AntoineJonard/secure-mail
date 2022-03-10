@@ -16,35 +16,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author imino
  */
 public class Client {
-    
+
     public static void main(String[] args) {
-        
-        
+
+
         try {
-                  URL url = new URL("http://192.168.56.1:8080/service");
+            URL url = new URL("http://192.168.56.1:8080/service");
             // URL url = new URL("https://www.google.com");
-           
-              URLConnection urlConn = url.openConnection();
-           urlConn.setDoInput(true);
-           urlConn.setDoOutput(true);
-           OutputStream out=urlConn.getOutputStream();
-           //out.write(user_name.getBytes());
-           System.out.println("salut....");
-           out.write("salut...".getBytes());
-           
-           InputStream  dis = urlConn.getInputStream();
-           byte[] b=new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
-           dis.read(b);
-           
-           String response=new String(b);
-            System.out.println("message reçu du serveur:"+response);
-       
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+
+            URLConnection urlConn = url.openConnection();
+            urlConn.setDoInput(true);
+            urlConn.setDoOutput(true);
+            OutputStream out = urlConn.getOutputStream();
+            //out.write(user_name.getBytes());
+            System.out.println("salut....");
+            out.write("salut...".getBytes());
+
+            InputStream dis = urlConn.getInputStream();
+            byte[] b = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
+            dis.read(b);
+
+            String response = new String(b);
+            System.out.println("message reçu du serveur:" + response);
+
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }

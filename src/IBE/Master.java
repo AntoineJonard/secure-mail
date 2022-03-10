@@ -4,6 +4,7 @@ package IBE;
 import it.unisa.dia.gas.jpbc.Element;
 
 
+import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
 
@@ -11,9 +12,7 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
 public class Master {
 	//Init Pairings
-	CurveParams curveParams = new CurveParams().load("curve.properties");
-	Pairing pairing = PairingFactory.getPairing(curveParams);
-	
+	Pairing pairing = PairingFactory.getPairing("a.properties");
 	
 	// Generate system parameters
 
@@ -23,5 +22,4 @@ public class Master {
 
 	Element MasterSecretKey = pairing.getZr().newRandomElement();
 
-	2 fonctions de hachage
 }
