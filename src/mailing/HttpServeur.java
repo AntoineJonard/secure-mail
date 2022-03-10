@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -48,8 +49,8 @@ public class HttpServeur {
             System.out.println("Setup ....");
             SettingParameters sp = IBEBasicIdent.setup(pairing); // génération des paramètres du système (ie: generateur, clef publique du système et clef du maitre)
             System.out.println("Paremètre du système :");
-            System.out.println("generator:" + sp.getPp().getP());
-            System.out.println("P_pub:" + sp.getPp().getP_pub());
+            System.out.println("generator:" + sp.getPp().getP(pairing));
+            System.out.println("P_pub:" + sp.getPp().getP_pub(pairing));
             System.out.println("MSK:" + sp.getMsk());
             System.out.println("---------------------------------");
 
@@ -63,7 +64,7 @@ public class HttpServeur {
                     he.sendResponseHeaders(200, bytes.length);
                     OutputStream os = he.getResponseBody();
                     os.write(bytes);
-                    System.out.println("Public parameters sent");
+                    System.out.println("Public parameters sent ("+ Arrays.toString(bytes) +")");
                     os.close();
                 }
             });
@@ -72,9 +73,11 @@ public class HttpServeur {
             server.createContext("/serviceSk", new HttpHandler() {
                 public void handle(HttpExchange he) throws IOException {
 
-                    String parameters = he.getRequestURI().getPath();
+                    String parameters = he.getRequestURI().getQuery();
 
                     String emailId = queryToMap(parameters).get("email");
+
+                    System.out.println("PK:" + emailId);
 
                     System.out.println("Key generation .....");
                     KeyPair keys = null; // genération d'une paire de clefs correspondante à id
@@ -83,7 +86,7 @@ public class HttpServeur {
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("PK:" + keys.getPk());
+
                     System.out.println("SK:" + keys.getSk());
 
                     byte[] skBytes = keys.getSk().toBytes();

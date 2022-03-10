@@ -62,8 +62,8 @@ public class IBEBasicIdent {
     public static IBEcipher IBEencryption(Pairing pairing, PublicParameters pp, byte[] message, String pk) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         // methode de chiffrement BasicID
 
-        Element generator = pp.getP();
-        Element p_pub = pp.getP_pub();
+        Element generator = pp.getP(pairing);
+        Element p_pub = pp.getP_pub(pairing);
 
         Element aeskey = pairing.getGT().newRandomElement(); //choix de la clef symmetrique AES
 
