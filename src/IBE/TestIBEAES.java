@@ -111,7 +111,7 @@ public class TestIBEAES {
 
         System.out.println("MSK:" + sp.getMsk());
 
-        String id = "cryptoav.tp@gmail.com"; // id de test 
+        String id = "cryptoav.tp@gmail.com+vivelacrypto"; // id de test 
 
         System.out.println("-----------------------------");
         

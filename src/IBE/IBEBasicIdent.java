@@ -36,7 +36,7 @@ public class IBEBasicIdent {
       return new SettingParameters(pp, msk); //instanciation d'un objet comportant les parametres du système
   }
     
-    public static KeyPair keygen(Pairing pairing,Element msk, String id) throws NoSuchAlgorithmException{
+    public static KeyPair keygen(Pairing pairing, Element msk, String id) throws NoSuchAlgorithmException{
         
         byte [] bytes=id.getBytes(); // représentation de l'id sous format binaire
         

@@ -1,13 +1,15 @@
 
 package IBE;
 
+import java.io.Serializable;
+
 import it.unisa.dia.gas.jpbc.Element;
 
 /**
 *
 * @author Clément Decroix
 */
-public class PublicParameters {
+public class PublicParameters implements Serializable{
 	private Element p; //generateur
 	    
 	private Element p_pub; // clef publique du système
