@@ -58,11 +58,11 @@ public class TestIBEAES {
             fout1.write(ibecipher.getAescipher()); // ecriture du résultat du chiffrement dans le fichier 
             System.out.println("to access the resulting encryption file check the following path: " + f1.getAbsolutePath());
             fout1.close();
-            
+
             System.out.println("---------------------");
-   
+
             System.out.println("Decryption ....");
-   
+
             byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(pairing, keys.getSk(), ibecipher); //déchiffrement Basic-ID IBE/AES
 
             File f2 = new File("MyFiles/decryptionresult" + filepath.substring(filepath.lastIndexOf("."))); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
@@ -72,21 +72,7 @@ public class TestIBEAES {
             System.out.println("to access the resulting decryption file check the following path: " + f2.getAbsolutePath());
             fout2.close();
             
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+        } catch (NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchPaddingException | IOException ex) {
             Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -127,8 +113,8 @@ public class TestIBEAES {
             System.out.println("-----------------------------");
             
             URL url = TestIBEAES.class.getResource("files/SecretFile.txt");
-            System.out.println(url.toString());
             assert url != null;
+            System.out.println(url);
             String path = url.getPath();
             
             IBEalltypeoffilesEncryptionDecryption(pairing, sp, keys, path); // chiffrement/déchiffrement

@@ -5,9 +5,9 @@
  */
 package mailing;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import IBE.PublicParameters;
+
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,7 +24,7 @@ public class Client {
 
 
         try {
-            URL url = new URL("http://192.168.56.1:8080/service");
+            URL url = new URL("http://localhost:8080/servicePp");
             // URL url = new URL("https://www.google.com");
 
             URLConnection urlConn = url.openConnection();
@@ -35,15 +35,24 @@ public class Client {
             System.out.println("salut....");
             out.write("salut...".getBytes());
 
-            InputStream dis = urlConn.getInputStream();
             byte[] b = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
-            dis.read(b);
 
-            String response = new String(b);
-            System.out.println("message reçu du serveur:" + response);
+            PublicParameters pp = (PublicParameters) objectFromBytes(b);
+
+            System.out.println("message reçu du serveur:" + pp);
 
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static Object objectFromBytes(byte[] bytes){
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        try (ObjectInput in = new ObjectInputStream(bis)) {
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
