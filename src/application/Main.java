@@ -1,6 +1,9 @@
 package application;
 	
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -13,6 +16,7 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import server.HttpServeur;
 
 import javax.mail.*;
 
@@ -27,6 +31,8 @@ public class Main extends Application {
 
 	private User user;
 
+	private HashMap<String, byte[]> registeredUsers;
+
 	//emails
 
 	private Properties receiveProperties;
@@ -38,10 +44,18 @@ public class Main extends Application {
 	private boolean connected = false;
 	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) throws IOException, ClassNotFoundException {
 		
 		Main.primaryStage = primaryStage;
 		Main.primaryStage.setTitle("Secure Mail");
+
+		URL url = HttpServeur.class.getResource("registeredUsers");
+		File save = new File(url.getPath());
+
+		FileInputStream fileInputStream = new FileInputStream(save);
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+		registeredUsers = (HashMap<String, byte[]>) objectInputStream.readObject();
 
 		initProperties();
 		
@@ -178,7 +192,7 @@ public class Main extends Application {
 		}
 	}
 
-	public boolean connectAs(User user) {
+	public boolean connectAs(User user) throws IOException {
 		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
@@ -201,6 +215,22 @@ public class Main extends Application {
 			System.out.println("Could not connect to the message store");
 
 			return false;
+		}
+
+		if (!registeredUsers.containsKey(user.getEmail())){
+			// Generate salt
+			SecureRandom secureRandom = new SecureRandom();
+			byte bytes[] = new byte[20];
+			secureRandom.nextBytes(bytes);
+
+			// Add salt to list of saved users
+			registeredUsers.put(user.getEmail(),bytes);
+
+			URL url = HttpServeur.class.getResource("registeredUsers");
+			File save = new File(url.getPath());
+			FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			objectOutputStream.writeObject(registeredUsers);
 		}
 
 		connected = true;

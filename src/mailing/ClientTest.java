@@ -8,35 +8,36 @@ package mailing;
 import IBE.PublicParameters;
 import RSAFAST.AsymmetricCryptography;
 import RSAFAST.GenerateKeys;
-import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
+import server.ClientAskMessage;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author imino
  */
-public class Client {
+public class ClientTest {
 
     public static void main(String[] args) {
 
         try {
 
             //Service pp
-            URL url = new URL("http://172.20.10.5:8080/servicePp");
+            URL url = new URL("http://172.20.10.2:8080/servicePp");
             // URL url = new URL("https://www.google.com");
 
             URLConnection urlConn = url.openConnection();
@@ -69,18 +70,23 @@ public class Client {
                 System.err.println(e.getMessage());
             }
 
-            url = new URL("http://172.20.10.5:8080/serviceSk?email=cryptoav.tp@gmail.com");
+            url = new URL("http://172.20.10.2:8080/serviceSk?email=cryptoav.tp@gmail.com");
             // URL url = new URL("https://www.google.com");
 
             urlConn = url.openConnection();
             urlConn.setDoInput(true);
             urlConn.setDoOutput(true);
             out = urlConn.getOutputStream();
-            //out.write(user_name.getBytes());
+
+
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update("tamere".getBytes(StandardCharsets.UTF_8));
+            byte[] hash = md.digest();
+            System.out.println("Sending password hash "+ Arrays.toString(hash));
             System.out.println("sending public rsa key :"+gk.getPublicKey().toString());
+
             ObjectOutputStream objectOut = new ObjectOutputStream(urlConn.getOutputStream());
-            assert gk != null;
-            objectOut.writeObject(gk.getPublicKey());
+            objectOut.writeObject(new ClientAskMessage(gk.getPublicKey(), hash));
 
             in = urlConn.getInputStream();
             b = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
@@ -94,7 +100,7 @@ public class Client {
             out.close();
 
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {
             e.printStackTrace();
         }

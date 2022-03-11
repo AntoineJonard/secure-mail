@@ -4,7 +4,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mailing;
+package server;
 
 import IBE.IBEBasicIdent;
 import IBE.KeyPair;
@@ -22,6 +22,7 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -36,21 +37,40 @@ import java.util.logging.Logger;
  */
 public class HttpServeur {
 
+    public HashMap<String,byte[]> registeredUsers;
 
-    public static void main(String[] args) {
+    public HttpServeur() throws IOException, ClassNotFoundException {
+
+        /*
+         * Retrieve users informations
+         */
+
+        URL url = HttpServeur.class.getResource("registeredUsers");
+        File save = new File(url.getPath());
+
+        FileInputStream fileInputStream = new FileInputStream(save);
+        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+        registeredUsers = (HashMap<String, byte[]>) objectInputStream.readObject();
+
+    }
+
+    public void start(){
+
+        /*
+         * Start http server
+         */
 
         try {
-            // InetSocketAddress s = new InetSocketAddress("localhost", 8080);
             System.out.println("my address:" + InetAddress.getLocalHost());
             InetSocketAddress s = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
-            //  InetSocketAddress s = new InetSocketAddress("localhost", 8080);
 
-            Pairing pairing = PairingFactory.getPairing("IBE/a.properties");    // chargement des paramètres de la courbe elliptique
-            // la configuration A offre un pairing symmetrique
-            // ce qui correspond à l'implementation du schema basicID
-            // qui est basé sur l'utilisation du pairing symmetrique
+            // chargement des paramètres de la courbe elliptique
+            Pairing pairing = PairingFactory.getPairing("IBE/a.properties");
+
             System.out.println("Setup ....");
-            SettingParameters sp = IBEBasicIdent.setup(pairing); // génération des paramètres du système (ie: generateur, clef publique du système et clef du maitre)
+            // génération des paramètres du système (ie: generateur, clef publique du système et clef du maitre)
+            SettingParameters sp = IBEBasicIdent.setup(pairing);
             System.out.println("Paremètre du système :");
             System.out.println("generator:" + sp.getPp().getP(pairing));
             System.out.println("P_pub:" + sp.getPp().getP_pub(pairing));
@@ -87,18 +107,24 @@ public class HttpServeur {
 
                     System.out.println("PK:" + emailId);
 
-                    // Output stream to retrieve public key
-                    ObjectInputStream objectIn = new ObjectInputStream(he.getRequestBody());
+                    // getting hash of password + client salt
+                    InputStream byteIn = he.getRequestBody();
 
-                    PublicKey pk = null;
+
+
+                    // Output stream to retrieve public key
+                    ObjectInputStream objectIn = new ObjectInputStream(byteIn);
+
+                    ClientAskMessage clientAskMessage = null;
 
                     try {
-                        pk = (PublicKey) objectIn.readObject();
+                        clientAskMessage = (ClientAskMessage) objectIn.readObject();
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
 
-                    System.out.println("Public key" + pk.toString());
+                    System.out.println("Public key" + clientAskMessage.getPk().toString());
+                    System.out.println("Received hash :"+ Arrays.toString(clientAskMessage.getPasswordHash()));
 
                     // Generation of IBE secret key depending on the email id
                     System.out.println("Key generation .....");
@@ -121,7 +147,8 @@ public class HttpServeur {
 
                     byte[] skBytes = null;
                     try {
-                        skBytes = rsa.encryptBytes(keys.getSk().toBytes(),pk);
+                        assert rsa != null;
+                        skBytes = rsa.encryptBytes(keys.getSk().toBytes(),clientAskMessage.getPk());
                     } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
                         e.printStackTrace();
                     }
@@ -132,6 +159,18 @@ public class HttpServeur {
                     os.write(skBytes);
                     System.out.println("Secret key sent");
                     os.close();
+
+                    /*
+                     * Register new client
+                     */
+
+                    registeredUsers.put(emailId,clientAskMessage.getPasswordHash());
+
+                    URL url = HttpServeur.class.getResource("registeredUsers");
+                    File save = new File(url.getPath());
+                    FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    objectOutputStream.writeObject(registeredUsers);
                 }
             });
 
@@ -139,6 +178,13 @@ public class HttpServeur {
         } catch (IOException ex) {
             Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+    }
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+        HttpServeur httpServeur = new HttpServeur();
+        httpServeur.start();
     }
 
     public static Map<String, String> queryToMap(String query) {
