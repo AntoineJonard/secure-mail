@@ -4,12 +4,13 @@ import java.io.*;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import controller.*;
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -31,7 +32,11 @@ public class Main extends Application {
 
 	private User user;
 
-	private HashMap<String, byte[]> registeredUsers;
+	private HashMap<String, byte[]> registeredUsersSalts;
+
+	private static Pairing pairing = PairingFactory.getPairing("IBE/a.properties");;
+
+	private static ServerConfig serverConfig;
 
 	//emails
 
@@ -49,13 +54,9 @@ public class Main extends Application {
 		Main.primaryStage = primaryStage;
 		Main.primaryStage.setTitle("Secure Mail");
 
-		URL url = HttpServeur.class.getResource("registeredUsers");
-		File save = new File(url.getPath());
+		serverConfig = new ServerConfig(8080, "172.20.10.5");
 
-		FileInputStream fileInputStream = new FileInputStream(save);
-		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-
-		registeredUsers = (HashMap<String, byte[]>) objectInputStream.readObject();
+		loadUsers();
 
 		initProperties();
 		
@@ -72,6 +73,16 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void loadUsers() throws IOException, ClassNotFoundException {
+		URL url = HttpServeur.class.getResource("registeredUsers");
+		File save = new File(url.getPath());
+
+		FileInputStream fileInputStream = new FileInputStream(save);
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+		registeredUsersSalts = (HashMap<String, byte[]>) objectInputStream.readObject();
 	}
 
 	@Override
@@ -192,7 +203,7 @@ public class Main extends Application {
 		}
 	}
 
-	public boolean connectAs(User user) throws IOException {
+	public boolean connectAs(User user)  {
 		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
@@ -217,20 +228,27 @@ public class Main extends Application {
 			return false;
 		}
 
-		if (!registeredUsers.containsKey(user.getEmail())){
+		if (!registeredUsersSalts.containsKey(user.getEmail())){
 			// Generate salt
 			SecureRandom secureRandom = new SecureRandom();
 			byte bytes[] = new byte[20];
 			secureRandom.nextBytes(bytes);
 
 			// Add salt to list of saved users
-			registeredUsers.put(user.getEmail(),bytes);
+			registeredUsersSalts.put(user.getEmail(),bytes);
 
 			URL url = HttpServeur.class.getResource("registeredUsers");
 			File save = new File(url.getPath());
-			FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-			objectOutputStream.writeObject(registeredUsers);
+			FileOutputStream fileOutputStream = null;
+			try {
+				fileOutputStream = new FileOutputStream(save,false);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+				objectOutputStream.writeObject(registeredUsersSalts);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Could not registered user and salt");
+				return false;
+			}
 		}
 
 		connected = true;
@@ -283,5 +301,13 @@ public class Main extends Application {
 
 	public Properties getSendProperties() {
 		return sendProperties;
+	}
+
+	public static Pairing getPairing() {
+		return pairing;
+	}
+
+	public static ServerConfig getServerConfig() {
+		return serverConfig;
 	}
 }

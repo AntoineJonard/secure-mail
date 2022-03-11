@@ -95,7 +95,7 @@ public class IBEBasicIdent {
     public static byte[] IBEdecryption(Pairing pairing, Element sk, IBEcipher C) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         //Déchiffrement IBE
 
-        Element pairingresult = pairing.pairing(sk, C.getU()); //e(d_id,U) dans le slide du cours avec d_id= la clef  privée de l'utilisateur
+        Element pairingresult = pairing.pairing(sk, C.getU(pairing)); //e(d_id,U) dans le slide du cours avec d_id= la clef  privée de l'utilisateur
 
         byte[] resultingAeskey = Xor(C.getV(), pairingresult.toBytes());  // V xor H_2(e(d_id,U))=K avec K est la clef symmetrique AES
 

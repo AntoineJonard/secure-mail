@@ -6,14 +6,17 @@
 package IBE;
 
 import it.unisa.dia.gas.jpbc.Element;
+import it.unisa.dia.gas.jpbc.Pairing;
+
+import java.io.Serializable;
 
 /**
  *
  * @author imine / Clément Decroix
  */
-public class IBEcipher {
+public class IBEcipher implements Serializable {
     
-    private Element U; // rP (vu dans le cours)
+    private byte[] U; // rP (vu dans le cours)
     
     byte[] V; // K xor e(Q_id,P_pub) avec K la clef symmetrique AES
     
@@ -22,7 +25,7 @@ public class IBEcipher {
     
     
     public IBEcipher(Element U, byte[] V, byte[] Aescipher) {
-        this.U = U;
+        this.U = U.toBytes();
         this.V = V;
         this.Aescipher = Aescipher;
     }
@@ -33,8 +36,8 @@ public class IBEcipher {
         return Aescipher;
     }
 
-    public Element getU() {
-        return U;
+    public Element getU(Pairing pairing) {
+        return pairing.getG1().newElementFromBytes(U);
     }
 
     public byte[] getV() {
@@ -42,7 +45,7 @@ public class IBEcipher {
     }
 
 	public void setU(Element u) {
-		U = u;
+		U = u.toBytes();
 	}
 
 	public void setV(byte[] v) {

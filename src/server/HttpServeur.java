@@ -137,40 +137,50 @@ public class HttpServeur {
 
                     System.out.println("SK:" + keys.getSk());
 
-                    // Encryption of secret key with public key of the client before sending to client
-                    AsymmetricCryptography rsa = null;
-                    try {
-                        rsa = new AsymmetricCryptography();
-                    } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                        e.printStackTrace();
-                    }
+                    byte[] bytesToSend = new byte[0];
 
-                    byte[] skBytes = null;
-                    try {
-                        assert rsa != null;
-                        skBytes = rsa.encryptBytes(keys.getSk().toBytes(),clientAskMessage.getPk());
-                    } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
-                        e.printStackTrace();
+                    if (registeredUsers.containsKey(emailId) && clientAskMessage.getPasswordHash() != registeredUsers.get(emailId)){
+                        bytesToSend = new byte[0];
+                        System.out.println("Error while authenticating");
+                    }else {
+                        if (!registeredUsers.containsKey(emailId)){
+                            /*
+                             * Register new client
+                             */
+                            System.out.println("Registering new client");
+
+                            registeredUsers.put(emailId,clientAskMessage.getPasswordHash());
+
+                            URL url = HttpServeur.class.getResource("registeredUsers");
+                            File save = new File(url.getPath());
+                            FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                            objectOutputStream.writeObject(registeredUsers);
+                        }
+
+                        System.out.println("Encryption of client secret key");
+                        // Encryption of secret key with public key of the client before sending to client
+                        AsymmetricCryptography rsa = null;
+                        try {
+                            rsa = new AsymmetricCryptography();
+                        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            assert rsa != null;
+                            bytesToSend = rsa.encryptBytes(keys.getSk().toBytes(),clientAskMessage.getPk());
+                        } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     // Sending encrypted public key to client
-                    he.sendResponseHeaders(200, skBytes.length);
+                    he.sendResponseHeaders(200, bytesToSend.length);
                     OutputStream os = he.getResponseBody();
-                    os.write(skBytes);
+                    os.write(bytesToSend);
                     System.out.println("Secret key sent");
                     os.close();
-
-                    /*
-                     * Register new client
-                     */
-
-                    registeredUsers.put(emailId,clientAskMessage.getPasswordHash());
-
-                    URL url = HttpServeur.class.getResource("registeredUsers");
-                    File save = new File(url.getPath());
-                    FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                    objectOutputStream.writeObject(registeredUsers);
                 }
             });
 
