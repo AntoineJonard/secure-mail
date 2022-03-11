@@ -24,7 +24,7 @@ public class Client {
 
 
         try {
-            URL url = new URL("http://localhost:8080/servicePp");
+            URL url = new URL("http://192.168.56.1:8080/servicePp");
             // URL url = new URL("https://www.google.com");
 
             URLConnection urlConn = url.openConnection();

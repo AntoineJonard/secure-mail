@@ -10,18 +10,18 @@ import it.unisa.dia.gas.jpbc.Element;
 * @author Clément Decroix
 */
 public class PublicParameters implements Serializable{
-	private Element p; //generateur
+	private byte[] p; //generateur
 	    
-	private Element p_pub; // clef publique du système
+	private byte[] p_pub; // clef publique du système
 
-	public PublicParameters(Element p, Element p_pub) {
+	public PublicParameters(byte[] p, byte[] p_pub) {
 		super();
 		this.p = p;
 		this.p_pub = p_pub;
 	}
 
 	public Element getP() {
-		return p;
+		return Element
 	}
 
 	public void setP(Element p) {
