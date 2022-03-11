@@ -62,8 +62,8 @@ public class IBEBasicIdent {
     public static IBEcipher IBEencryption(Pairing pairing, PublicParameters pp, byte[] message, String pk) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         // methode de chiffrement BasicID
 
-        Element generator = pp.getP();
-        Element p_pub = pp.getP_pub();
+        Element generator = pp.getP(pairing);
+        Element p_pub = pp.getP_pub(pairing);
 
         Element aeskey = pairing.getGT().newRandomElement(); //choix de la clef symmetrique AES
 
@@ -95,7 +95,7 @@ public class IBEBasicIdent {
     public static byte[] IBEdecryption(Pairing pairing, Element sk, IBEcipher C) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         //Déchiffrement IBE
 
-        Element pairingresult = pairing.pairing(sk, C.getU()); //e(d_id,U) dans le slide du cours avec d_id= la clef  privée de l'utilisateur
+        Element pairingresult = pairing.pairing(sk, C.getU(pairing)); //e(d_id,U) dans le slide du cours avec d_id= la clef  privée de l'utilisateur
 
         byte[] resultingAeskey = Xor(C.getV(), pairingresult.toBytes());  // V xor H_2(e(d_id,U))=K avec K est la clef symmetrique AES
 

@@ -1,24 +1,29 @@
 package application;
 	
-import java.io.IOException;
-import java.util.Objects;
+import java.io.*;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import controller.*;
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import server.HttpServeur;
 
 import javax.mail.*;
 
 public class Main extends Application {
 	
-	private static Stage primaryStage;
+	private Stage primaryStage;
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private VBox mailLayout;
@@ -26,6 +31,12 @@ public class Main extends Application {
 	private BorderPane rootLayout;
 
 	private User user;
+
+	private HashMap<String, byte[]> registeredUsersSalts;
+
+	private  Pairing pairing = PairingFactory.getPairing("IBE/a.properties");;
+
+	private ServerConfig serverConfig;
 
 	//emails
 
@@ -36,12 +47,25 @@ public class Main extends Application {
 	private Message[] emails;
 
 	private boolean connected = false;
+
+	private static Main singleton;
+
+	public static Main getInstance(){
+		return singleton;
+	}
 	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) throws IOException, ClassNotFoundException {
+
+		if (singleton == null)
+			singleton = this;
 		
-		Main.primaryStage = primaryStage;
-		Main.primaryStage.setTitle("Secure Mail");
+		this.primaryStage = primaryStage;
+		primaryStage.setTitle("Secure Mail");
+
+		serverConfig = new ServerConfig(8080, "172.20.10.5");
+
+		loadUsers();
 
 		initProperties();
 		
@@ -58,6 +82,16 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void loadUsers() throws IOException, ClassNotFoundException {
+		URL url = HttpServeur.class.getResource("registeredUsers");
+		File save = new File(url.getPath());
+
+		FileInputStream fileInputStream = new FileInputStream(save);
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+		registeredUsersSalts = (HashMap<String, byte[]>) objectInputStream.readObject();
 	}
 
 	@Override
@@ -178,7 +212,7 @@ public class Main extends Application {
 		}
 	}
 
-	public boolean connectAs(User user) {
+	public boolean connectAs(User user)  {
 		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
@@ -201,6 +235,32 @@ public class Main extends Application {
 			System.out.println("Could not connect to the message store");
 
 			return false;
+		}
+
+		if (!registeredUsersSalts.containsKey(user.getEmail())){
+			// Generate salt
+			SecureRandom secureRandom = new SecureRandom();
+			byte salt[] = new byte[20];
+			secureRandom.nextBytes(salt);
+
+			// Add salt to list of saved users
+			registeredUsersSalts.put(user.getEmail(),salt);
+			this.user.setSalt(salt);
+
+			URL url = HttpServeur.class.getResource("registeredUsers");
+			File save = new File(url.getPath());
+			FileOutputStream fileOutputStream = null;
+			try {
+				fileOutputStream = new FileOutputStream(save,false);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+				objectOutputStream.writeObject(registeredUsersSalts);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Could not registered user and salt");
+				return false;
+			}
+		}else {
+			this.user.setSalt(registeredUsersSalts.get(user.getEmail()));
 		}
 
 		connected = true;
@@ -247,11 +307,19 @@ public class Main extends Application {
 		return emails;
 	}
 
-	public static Stage getPrimaryStage() {
+	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
 
 	public Properties getSendProperties() {
 		return sendProperties;
+	}
+
+	public Pairing getPairing() {
+		return pairing;
+	}
+
+	public ServerConfig getServerConfig() {
+		return serverConfig;
 	}
 }

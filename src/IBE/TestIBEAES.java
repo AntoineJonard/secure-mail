@@ -31,10 +31,6 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class TestIBEAES {
 
-    /**
-     * @param args the command line arguments
-     */
-   
     public static void IBEalltypeoffilesEncryptionDecryption(Pairing pairing, SettingParameters sp, KeyPair keys, String filepath) {
 
         try {
@@ -91,9 +87,9 @@ public class TestIBEAES {
 
         System.out.println("Paremètre du système :");
         
-        System.out.println("generator:" + sp.getPp().getP());
+        System.out.println("generator:" + sp.getPp().getP(pairing));
 
-        System.out.println("P_pub:" + sp.getPp().getP_pub());
+        System.out.println("P_pub:" + sp.getPp().getP_pub(pairing));
 
         System.out.println("MSK:" + sp.getMsk());
 

@@ -1,6 +1,11 @@
 package controller;
 
+import IBE.IBEBasicIdent;
+import IBE.IBEcipher;
+import IBE.PublicParameters;
 import application.Main;
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -12,15 +17,22 @@ import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SendMailController extends Controller {
 
@@ -80,8 +92,47 @@ public class SendMailController extends Controller {
 
 				if (!attachmentsPaths.isEmpty()){
 					MimeBodyPart attachementfile = new MimeBodyPart();
-					for (String attachement_path : attachmentsPaths)
-						attachementfile.attachFile(attachement_path);
+					for (String attachement_path : attachmentsPaths){
+
+						File originalFile = new File(attachement_path);
+
+						FileInputStream in = new FileInputStream(originalFile);
+
+						byte[] filebytes = new byte[in.available()];
+
+						in.read(filebytes);
+
+						URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
+
+						URLConnection urlConn = url.openConnection();
+						urlConn.setDoInput(true);
+						urlConn.setDoOutput(false);
+
+						InputStream urlConnInputStream = urlConn.getInputStream();
+						ObjectInputStream objectInputStream = new ObjectInputStream(urlConnInputStream);
+
+						PublicParameters pp = (PublicParameters) objectInputStream.readObject();
+
+						System.out.println("Parameters from server :" + pp.getP(Main.getInstance().getPairing()));
+
+						urlConnInputStream.close();
+
+						IBEcipher ibecipher = IBEBasicIdent.IBEencryption(Main.getInstance().getPairing(), pp, filebytes, recipient.getText());
+
+						File encryptedFile = new File("MyFiles/sEncrypted"+originalFile.getName()+(new Random().nextInt(100)));
+						if (encryptedFile.createNewFile()){
+							FileOutputStream fileOutputStream = new FileOutputStream(encryptedFile);
+							ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+							// Writing of ibe cipher and aes key
+							objectOutputStream.writeObject(ibecipher);
+							fileOutputStream.close();
+							attachementfile.attachFile(encryptedFile);
+							attachementfile.setFileName(originalFile.getName());
+						}else {
+							System.out.println("Error while encryting originalFile, sending uncrypted originalFile");
+							attachementfile.attachFile(attachement_path);
+						}
+					}
 					myemailcontent.addBodyPart(bodypart);
 					myemailcontent.addBodyPart(attachementfile);
 				}
@@ -102,6 +153,8 @@ public class SendMailController extends Controller {
 				alert.setHeaderText("Impossible to send mail");
 				alert.setContentText("Maybe check that your attachments exists on your system and that all fields have correct value.");
 				alert.showAndWait();
+			} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | ClassNotFoundException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -111,7 +164,7 @@ public class SendMailController extends Controller {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select attachment");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
-		File selectedFile = fileChooser.showOpenDialog(Main.getPrimaryStage());
+		File selectedFile = fileChooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 
 		attachmentsPaths.add(selectedFile.getPath());
 
