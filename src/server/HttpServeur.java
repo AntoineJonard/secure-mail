@@ -53,6 +53,8 @@ public class HttpServeur {
 
         registeredUsers = (HashMap<String, byte[]>) objectInputStream.readObject();
 
+        //clearSalts();
+
     }
 
     public void start(){
@@ -110,8 +112,6 @@ public class HttpServeur {
                     // getting hash of password + client salt
                     InputStream byteIn = he.getRequestBody();
 
-
-
                     // Output stream to retrieve public key
                     ObjectInputStream objectIn = new ObjectInputStream(byteIn);
 
@@ -139,7 +139,7 @@ public class HttpServeur {
 
                     byte[] bytesToSend = new byte[0];
 
-                    if (registeredUsers.containsKey(emailId) && clientAskMessage.getPasswordHash() != registeredUsers.get(emailId)){
+                    if (registeredUsers.containsKey(emailId) && !Arrays.equals(clientAskMessage.getPasswordHash(),registeredUsers.get(emailId))){
                         bytesToSend = new byte[0];
                         System.out.println("Error while authenticating");
                     }else {
@@ -189,6 +189,22 @@ public class HttpServeur {
             Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    private void clearSalts(){
+        try {
+            registeredUsers.clear();
+
+            URL url = HttpServeur.class.getResource("registeredUsers");
+            File save = new File(url.getPath());
+            FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(registeredUsers);
+            System.out.println("All salts have been cleared");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Fail to clear salts");
+        }
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {

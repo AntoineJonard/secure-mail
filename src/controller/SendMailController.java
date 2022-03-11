@@ -32,6 +32,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SendMailController extends Controller {
 
@@ -93,15 +94,15 @@ public class SendMailController extends Controller {
 					MimeBodyPart attachementfile = new MimeBodyPart();
 					for (String attachement_path : attachmentsPaths){
 
-						File file = new File(attachement_path);
+						File originalFile = new File(attachement_path);
 
-						FileInputStream in = new FileInputStream(file);
+						FileInputStream in = new FileInputStream(originalFile);
 
 						byte[] filebytes = new byte[in.available()];
 
 						in.read(filebytes);
 
-						URL url = new URL("http://"+Main.getServerConfig().getAdress()+":"+Main.getServerConfig().getPort()+"/servicePp");
+						URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
 
 						URLConnection urlConn = url.openConnection();
 						urlConn.setDoInput(true);
@@ -112,22 +113,23 @@ public class SendMailController extends Controller {
 
 						PublicParameters pp = (PublicParameters) objectInputStream.readObject();
 
-						System.out.println("Parameters from server :" + pp.getP(Main.getPairing()));
+						System.out.println("Parameters from server :" + pp.getP(Main.getInstance().getPairing()));
 
 						urlConnInputStream.close();
 
-						IBEcipher ibecipher = IBEBasicIdent.IBEencryption(Main.getPairing(), pp, filebytes, recipient.getText());
+						IBEcipher ibecipher = IBEBasicIdent.IBEencryption(Main.getInstance().getPairing(), pp, filebytes, recipient.getText());
 
-						File f1 = new File("MyFiles/encryptionSender");
-						if (f1.createNewFile()){
-							FileOutputStream fout1 = new FileOutputStream(f1);
-							ObjectOutputStream objectOutputStream = new ObjectOutputStream(fout1);
-							objectOutputStream.writeObject(ibecipher); // ecriture du résultat du chiffrement dans le fichier
-							System.out.println("to access the resulting encryption file check the following path: " + f1.getAbsolutePath());
-							fout1.close();
-							attachementfile.attachFile(f1);
+						File encryptedFile = new File("MyFiles/sEncrypted"+originalFile.getName()+(new Random().nextInt(100)));
+						if (encryptedFile.createNewFile()){
+							FileOutputStream fileOutputStream = new FileOutputStream(encryptedFile);
+							ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+							// Writing of ibe cipher and aes key
+							objectOutputStream.writeObject(ibecipher);
+							fileOutputStream.close();
+							attachementfile.attachFile(encryptedFile);
+							attachementfile.setFileName(originalFile.getName());
 						}else {
-							System.out.println("Error while encryting file, sending uncrypted file");
+							System.out.println("Error while encryting originalFile, sending uncrypted originalFile");
 							attachementfile.attachFile(attachement_path);
 						}
 					}
@@ -162,7 +164,7 @@ public class SendMailController extends Controller {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select attachment");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
-		File selectedFile = fileChooser.showOpenDialog(Main.getPrimaryStage());
+		File selectedFile = fileChooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 
 		attachmentsPaths.add(selectedFile.getPath());
 

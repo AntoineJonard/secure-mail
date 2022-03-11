@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -114,16 +115,16 @@ public class MailController extends Controller{
     private void download(MouseEvent event)  {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select download directory");
-        File chosenDir = dirChooser.showDialog(Main.getPrimaryStage());
+        File chosenDir = dirChooser.showDialog(Main.getInstance().getPrimaryStage());
         for (MimeBodyPart part : attachments){
             try {
-                File encryptedFile = new File("MyFiles/encryptionresultReceiver");
+                File encryptedFile = new File("MyFiles/rEncrypted"+part.getFileName()+(new Random().nextInt(100)));
                 part.saveFile(encryptedFile);
                 FileInputStream fileInputStream = new FileInputStream(encryptedFile);
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
                 IBEcipher ibEcipher = (IBEcipher) objectInputStream.readObject();
 
-                // Service sk
+                // Getting user encrypted secret key from server
                 GenerateKeys gk = null;
                 try {
                     gk = new GenerateKeys(2048);
@@ -132,45 +133,45 @@ public class MailController extends Controller{
                     System.err.println(e.getMessage());
                 }
 
-                URL url = new URL("http://"+Main.getServerConfig().getAdress()+":"+Main.getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
+                URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
 
                 URLConnection urlConn = url.openConnection();
                 urlConn.setDoInput(true);
                 urlConn.setDoOutput(true);
                 OutputStream out = urlConn.getOutputStream();
 
-
                 MessageDigest md = MessageDigest.getInstance("SHA-1");
-                md.update("tamere".getBytes(StandardCharsets.UTF_8));
+                md.update(Main.getInstance().getUser().getSalt());
+                md.update(Main.getInstance().getUser().getPassword().getBytes(StandardCharsets.UTF_8));
                 byte[] hash = md.digest();
-                System.out.println("Sending password hash "+ Arrays.toString(hash));
+                System.out.println("Sending password salted hash "+ Arrays.toString(hash));
                 System.out.println("sending public rsa key :"+gk.getPublicKey().toString());
 
                 ObjectOutputStream objectOut = new ObjectOutputStream(urlConn.getOutputStream());
                 objectOut.writeObject(new ClientAskMessage(gk.getPublicKey(), hash));
 
                 InputStream in = urlConn.getInputStream();
-                byte[] b = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
-                in.read(b);
+                byte[] secretKeyBytes = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
+                in.read(secretKeyBytes);
 
                 AsymmetricCryptography rsa = new AsymmetricCryptography();
 
-                Element sk = Main.getPairing().getG1().newElementFromBytes(rsa.decryptBytes(b,gk.getPrivateKey()));
+                Element sk = Main.getInstance().getPairing().getG1().newElementFromBytes(rsa.decryptBytes(secretKeyBytes,gk.getPrivateKey()));
 
                 System.out.println("Sk from server :" + sk );
 
                 in.close();
                 out.close();
 
-                byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(Main.getPairing(), sk, ibEcipher); //déchiffrement Basic-ID IBE/AES
+                byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(Main.getInstance().getPairing(), sk, ibEcipher); //déchiffrement Basic-ID IBE/AES
 
-                File f2 = new File(chosenDir+File.separator+part.getFileName()); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
-                f2.createNewFile();
-                FileOutputStream fout2 = new FileOutputStream(f2);
-                fout2.write(resulting_bytes);
-                fout2.close();
+                File decryptedfile = new File(chosenDir+File.separator+part.getFileName()); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
+                decryptedfile.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(decryptedfile);
+                fileOutputStream.write(resulting_bytes);
+                fileOutputStream.close();
 
-            } catch (IOException | ClassNotFoundException | MessagingException e) {
+            } catch (IOException | NumberFormatException | ClassNotFoundException | MessagingException e) {
                 e.printStackTrace();
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");

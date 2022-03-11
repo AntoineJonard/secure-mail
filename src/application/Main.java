@@ -23,7 +23,7 @@ import javax.mail.*;
 
 public class Main extends Application {
 	
-	private static Stage primaryStage;
+	private Stage primaryStage;
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private VBox mailLayout;
@@ -34,9 +34,9 @@ public class Main extends Application {
 
 	private HashMap<String, byte[]> registeredUsersSalts;
 
-	private static Pairing pairing = PairingFactory.getPairing("IBE/a.properties");;
+	private  Pairing pairing = PairingFactory.getPairing("IBE/a.properties");;
 
-	private static ServerConfig serverConfig;
+	private ServerConfig serverConfig;
 
 	//emails
 
@@ -47,12 +47,21 @@ public class Main extends Application {
 	private Message[] emails;
 
 	private boolean connected = false;
+
+	private static Main singleton;
+
+	public static Main getInstance(){
+		return singleton;
+	}
 	
 	@Override
 	public void start(Stage primaryStage) throws IOException, ClassNotFoundException {
+
+		if (singleton == null)
+			singleton = this;
 		
-		Main.primaryStage = primaryStage;
-		Main.primaryStage.setTitle("Secure Mail");
+		this.primaryStage = primaryStage;
+		primaryStage.setTitle("Secure Mail");
 
 		serverConfig = new ServerConfig(8080, "172.20.10.5");
 
@@ -231,11 +240,12 @@ public class Main extends Application {
 		if (!registeredUsersSalts.containsKey(user.getEmail())){
 			// Generate salt
 			SecureRandom secureRandom = new SecureRandom();
-			byte bytes[] = new byte[20];
-			secureRandom.nextBytes(bytes);
+			byte salt[] = new byte[20];
+			secureRandom.nextBytes(salt);
 
 			// Add salt to list of saved users
-			registeredUsersSalts.put(user.getEmail(),bytes);
+			registeredUsersSalts.put(user.getEmail(),salt);
+			this.user.setSalt(salt);
 
 			URL url = HttpServeur.class.getResource("registeredUsers");
 			File save = new File(url.getPath());
@@ -249,6 +259,8 @@ public class Main extends Application {
 				System.out.println("Could not registered user and salt");
 				return false;
 			}
+		}else {
+			this.user.setSalt(registeredUsersSalts.get(user.getEmail()));
 		}
 
 		connected = true;
@@ -295,7 +307,7 @@ public class Main extends Application {
 		return emails;
 	}
 
-	public static Stage getPrimaryStage() {
+	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
 
@@ -303,11 +315,11 @@ public class Main extends Application {
 		return sendProperties;
 	}
 
-	public static Pairing getPairing() {
+	public Pairing getPairing() {
 		return pairing;
 	}
 
-	public static ServerConfig getServerConfig() {
+	public ServerConfig getServerConfig() {
 		return serverConfig;
 	}
 }
