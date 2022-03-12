@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,15 +44,15 @@ public class HttpServeur {
          * Retrieve users informations
          */
 
-        URL url = HttpServeur.class.getResource("registeredUsers");
-        File save = new File(url.getPath());
+        File save = new File("src/server/registeredUsers");
+        System.out.println(save.getAbsolutePath());
+
+        //resetSalts();
 
         FileInputStream fileInputStream = new FileInputStream(save);
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         registeredUsers = (HashMap<String, byte[]>) objectInputStream.readObject();
-
-        //clearSalts();
 
     }
 
@@ -191,12 +190,14 @@ public class HttpServeur {
 
     }
 
-    private void clearSalts(){
+    private void resetSalts(){
         try {
-            registeredUsers.clear();
+            if (registeredUsers != null)
+                registeredUsers.clear();
+            else
+                registeredUsers = new HashMap<>();
 
-            URL url = HttpServeur.class.getResource("registeredUsers");
-            File save = new File(url.getPath());
+            File save = new File("src/server/registeredUsers");
             FileOutputStream fileOutputStream = new FileOutputStream(save,false);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(registeredUsers);

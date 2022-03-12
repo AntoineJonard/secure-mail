@@ -1,7 +1,6 @@
 package application;
 	
 import java.io.*;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Properties;
@@ -17,7 +16,6 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import server.HttpServeur;
 
 import javax.mail.*;
 
@@ -63,7 +61,7 @@ public class Main extends Application {
 		this.primaryStage = primaryStage;
 		primaryStage.setTitle("Secure Mail");
 
-		serverConfig = new ServerConfig(8080, "172.20.10.5");
+		serverConfig = new ServerConfig(8080, "10.56.59.208");
 
 		loadUsers();
 
@@ -85,8 +83,9 @@ public class Main extends Application {
 	}
 
 	private void loadUsers() throws IOException, ClassNotFoundException {
-		URL url = HttpServeur.class.getResource("registeredUsers");
-		File save = new File(url.getPath());
+		//resetPasswordHashs();
+
+		File save = new File("src/application/registeredUsers");
 
 		FileInputStream fileInputStream = new FileInputStream(save);
 		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -247,8 +246,7 @@ public class Main extends Application {
 			registeredUsersSalts.put(user.getEmail(),salt);
 			this.user.setSalt(salt);
 
-			URL url = HttpServeur.class.getResource("registeredUsers");
-			File save = new File(url.getPath());
+			File save = new File("src/application/registeredUsers");
 			FileOutputStream fileOutputStream = null;
 			try {
 				fileOutputStream = new FileOutputStream(save,false);
@@ -297,6 +295,24 @@ public class Main extends Application {
 		}
 
 		return true;
+	}
+
+	private void resetPasswordHashs(){
+		try {
+			if (registeredUsersSalts != null)
+				registeredUsersSalts.clear();
+			else
+				registeredUsersSalts = new HashMap<>();
+
+			File save = new File("src/application/registeredUsers");
+			FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			objectOutputStream.writeObject(registeredUsersSalts);
+			System.out.println("All passwords hashes have been cleared");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Fail to clear passwords hashes");
+		}
 	}
 
 	public User getUser() {
