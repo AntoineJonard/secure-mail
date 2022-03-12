@@ -154,8 +154,9 @@ public class HttpServeur {
                             URL url = HttpServeur.class.getResource("registeredUsers");
                             File save = new File(url.getPath());
                             FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                            objectOutputStream.writeObject(registeredUsers);
+                            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+								objectOutputStream.writeObject(registeredUsers);
+							}
                         }
 
                         System.out.println("Encryption of client secret key");
@@ -198,8 +199,9 @@ public class HttpServeur {
             URL url = HttpServeur.class.getResource("registeredUsers");
             File save = new File(url.getPath());
             FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(registeredUsers);
+            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+				objectOutputStream.writeObject(registeredUsers);
+			}
             System.out.println("All salts have been cleared");
         } catch (IOException e) {
             e.printStackTrace();
