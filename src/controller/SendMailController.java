@@ -4,8 +4,6 @@ import IBE.IBEBasicIdent;
 import IBE.IBEcipher;
 import IBE.PublicParameters;
 import application.Main;
-import it.unisa.dia.gas.jpbc.Pairing;
-import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -14,7 +12,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import javax.crypto.BadPaddingException;
