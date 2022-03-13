@@ -117,52 +117,61 @@ public class MailController extends Controller{
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select download directory");
         File chosenDir = dirChooser.showDialog(Main.getInstance().getPrimaryStage());
-        for (MimeBodyPart part : attachments){
-            try {
-                File encryptedFile = new File("MyFiles/rEncrypted"+part.getFileName()+(new Random().nextInt(100)));
-                part.saveFile(encryptedFile);
-                FileInputStream fileInputStream = new FileInputStream(encryptedFile);
-                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                IBEcipher ibEcipher = (IBEcipher) objectInputStream.readObject();
 
-                // Getting user encrypted secret key from server
-                GenerateKeys gk = null;
-                try {
-                    gk = new GenerateKeys(2048);
-                    gk.createKeys();
-                } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-                    System.err.println(e.getMessage());
-                }
+        // Getting user encrypted secret key from server
 
-                URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
+        GenerateKeys gk = null;
+        try {
+            gk = new GenerateKeys(2048);
+            gk.createKeys();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            System.err.println(e.getMessage());
+        }
 
-                URLConnection urlConn = url.openConnection();
-                urlConn.setDoInput(true);
-                urlConn.setDoOutput(true);
-                OutputStream out = urlConn.getOutputStream();
+        try {
 
-                MessageDigest md = MessageDigest.getInstance("SHA-1");
-                md.update(Main.getInstance().getUser().getSalt());
-                md.update(Main.getInstance().getUser().getPassword().getBytes(StandardCharsets.UTF_8));
-                byte[] hash = md.digest();
-                System.out.println("Sending password salted hash "+ Arrays.toString(hash));
-                System.out.println("sending public rsa key :"+gk.getPublicKey().toString());
+            URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
 
-                ObjectOutputStream objectOut = new ObjectOutputStream(urlConn.getOutputStream());
-                objectOut.writeObject(new ClientAskMessage(gk.getPublicKey(), hash));
+            URLConnection urlConn = url.openConnection();
+            urlConn.setDoInput(true);
+            urlConn.setDoOutput(true);
+            OutputStream out = urlConn.getOutputStream();
 
-                InputStream in = urlConn.getInputStream();
-                byte[] secretKeyBytes = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
-                in.read(secretKeyBytes);
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(Main.getInstance().getUser().getSalt());
+            md.update(Main.getInstance().getUser().getPassword().getBytes(StandardCharsets.UTF_8));
+            byte[] hash = md.digest();
+            System.out.println("Sending password salted hash "+ Arrays.toString(hash));
+            System.out.println("sending public rsa key :"+gk.getPublicKey().toString());
 
-                if (secretKeyBytes.length <= 0) {
-                    throw new DecryptionException();
-                }else {
-                    AsymmetricCryptography rsa = new AsymmetricCryptography();
+            ObjectOutputStream objectOut = new ObjectOutputStream(urlConn.getOutputStream());
+            objectOut.writeObject(new ClientAskMessage(gk.getPublicKey(), hash));
 
-                    Element sk = Main.getInstance().getPairing().getG1().newElementFromBytes(rsa.decryptBytes(secretKeyBytes,gk.getPrivateKey()));
+            InputStream in = urlConn.getInputStream();
+            byte[] secretKeyBytes = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
+            in.read(secretKeyBytes);
 
-                    System.out.println("Sk from server :" + sk );
+            Element sk;
+
+            if (secretKeyBytes.length <= 0) {
+                throw new DecryptionException();
+            }else {
+                AsymmetricCryptography rsa = new AsymmetricCryptography();
+
+                sk = Main.getInstance().getPairing().getG1().newElementFromBytes(rsa.decryptBytes(secretKeyBytes, gk.getPrivateKey()));
+
+                System.out.println("Sk from server :" + sk);
+            }
+
+            // Decryption of attachment(s)
+
+            for (MimeBodyPart part : attachments){
+
+                    File encryptedFile = new File("MyFiles/rEncrypted"+part.getFileName()+(new Random().nextInt(100)));
+                    part.saveFile(encryptedFile);
+                    FileInputStream fileInputStream = new FileInputStream(encryptedFile);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                    IBEcipher ibEcipher = (IBEcipher) objectInputStream.readObject();
 
                     in.close();
                     out.close();
@@ -170,31 +179,35 @@ public class MailController extends Controller{
                     byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(Main.getInstance().getPairing(), sk, ibEcipher); //déchiffrement Basic-ID IBE/AES
 
                     File decryptedfile = new File(chosenDir+File.separator+part.getFileName()); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
-                    decryptedfile.createNewFile();
-                    FileOutputStream fileOutputStream = new FileOutputStream(decryptedfile);
-                    fileOutputStream.write(resulting_bytes);
-                    fileOutputStream.close();
-                }
 
-            } catch (IOException | NumberFormatException | ClassNotFoundException | MessagingException e) {
-                e.printStackTrace();
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Impossible download file(s)");
-                alert.setContentText("Maybe try to reconnect.");
-                alert.showAndWait();
-            }  catch (DecryptionException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-                e.printStackTrace();
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Error while decrypting file");
-                alert.setContentText("Impossible decrypt your secret key from server.");
-                alert.showAndWait();
+                    if (decryptedfile.createNewFile()){
+                        FileOutputStream fileOutputStream = new FileOutputStream(decryptedfile);
+                        fileOutputStream.write(resulting_bytes);
+                        fileOutputStream.close();
+                    }else {
+                        throw new IOException();
+                    }
             }
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Success");
+            alert.setHeaderText(attachments.size()+" file(s) have been downloaded to "+chosenDir.getPath());
+            alert.showAndWait();
+
+        } catch (IOException | NumberFormatException | ClassNotFoundException | MessagingException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Impossible download file(s)");
+            alert.setContentText("Maybe try to reconnect.");
+            alert.showAndWait();
+        }  catch (DecryptionException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Error while decrypting file");
+            alert.setContentText("Impossible to get your secret key from server.");
+            alert.showAndWait();
         }
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Success");
-        alert.setHeaderText(attachments.size()+" file(s) have been downloaded to "+chosenDir.getPath());
-        alert.showAndWait();
     }
 }
