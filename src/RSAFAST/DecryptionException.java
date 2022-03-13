@@ -4,7 +4,7 @@ public class DecryptionException extends Exception{
 
     public DecryptionException() {
 
-        super(message);
+        super();
         System.out.println("Error while decrypting secret key");
 
     }
