@@ -25,17 +25,8 @@ public class PublicParameters implements Serializable{
 		return pairing.getG1().newElementFromBytes(p);
 	}
 
-	public void setP(Element p) {
-		this.p = p.toBytes();
-	}
-
 	public Element getP_pub(Pairing pairing) {
 		return pairing.getG1().newElementFromBytes(p_pub);
 	}
 
-	public void setP_pub(Element p_pub) {
-		this.p_pub = p_pub.toBytes();
-	}
-	   
-	   
 }

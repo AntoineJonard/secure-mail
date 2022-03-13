@@ -25,6 +25,7 @@ import javax.mail.internet.MimeBodyPart;
 import IBE.IBEBasicIdent;
 import IBE.IBEcipher;
 import RSAFAST.AsymmetricCryptography;
+import RSAFAST.DecryptionException;
 import RSAFAST.GenerateKeys;
 import application.Main;
 import it.unisa.dia.gas.jpbc.Element;
@@ -154,22 +155,26 @@ public class MailController extends Controller{
                 byte[] secretKeyBytes = new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
                 in.read(secretKeyBytes);
 
-                AsymmetricCryptography rsa = new AsymmetricCryptography();
+                if (secretKeyBytes.length <= 0) {
+                    throw new DecryptionException();
+                }else {
+                    AsymmetricCryptography rsa = new AsymmetricCryptography();
 
-                Element sk = Main.getInstance().getPairing().getG1().newElementFromBytes(rsa.decryptBytes(secretKeyBytes,gk.getPrivateKey()));
+                    Element sk = Main.getInstance().getPairing().getG1().newElementFromBytes(rsa.decryptBytes(secretKeyBytes,gk.getPrivateKey()));
 
-                System.out.println("Sk from server :" + sk );
+                    System.out.println("Sk from server :" + sk );
 
-                in.close();
-                out.close();
+                    in.close();
+                    out.close();
 
-                byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(Main.getInstance().getPairing(), sk, ibEcipher); //déchiffrement Basic-ID IBE/AES
+                    byte[] resulting_bytes = IBEBasicIdent.IBEdecryption(Main.getInstance().getPairing(), sk, ibEcipher); //déchiffrement Basic-ID IBE/AES
 
-                File decryptedfile = new File(chosenDir+File.separator+part.getFileName()); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
-                decryptedfile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(decryptedfile);
-                fileOutputStream.write(resulting_bytes);
-                fileOutputStream.close();
+                    File decryptedfile = new File(chosenDir+File.separator+part.getFileName()); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
+                    decryptedfile.createNewFile();
+                    FileOutputStream fileOutputStream = new FileOutputStream(decryptedfile);
+                    fileOutputStream.write(resulting_bytes);
+                    fileOutputStream.close();
+                }
 
             } catch (IOException | NumberFormatException | ClassNotFoundException | MessagingException e) {
                 e.printStackTrace();
@@ -178,8 +183,13 @@ public class MailController extends Controller{
                 alert.setHeaderText("Impossible download file(s)");
                 alert.setContentText("Maybe try to reconnect.");
                 alert.showAndWait();
-            } catch (NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
+            }  catch (DecryptionException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
                 e.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Error while decrypting file");
+                alert.setContentText("Impossible decrypt your secret key from server.");
+                alert.showAndWait();
             }
         }
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
