@@ -96,7 +96,8 @@ public class Main extends Application {
 
 	@Override
 	public void stop() throws MessagingException {
-		folderInbox.close();
+		if (folderInbox != null)
+			folderInbox.close();
 		connected = false;
 	}
 	
