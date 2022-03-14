@@ -7,6 +7,8 @@ public class ClientAskMessage implements Serializable {
 
     PublicKey pk;
     byte[] passwordHash;
+    
+    private static final long serialVersionUID = 6529685098267757691L;
 
     public ClientAskMessage(PublicKey pk, byte[] passwordHash) {
         this.pk = pk;

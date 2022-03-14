@@ -63,8 +63,8 @@ public class HttpServeur {
          */
 
         try {
-            System.out.println("my address:" + InetAddress.getLocalHost());
-            InetSocketAddress s = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+            System.out.println("my address:" + InetAddress.getByName("server"));
+            InetSocketAddress s = new InetSocketAddress(InetAddress.getByName("server"), 8080);
 
             // chargement des paramètres de la courbe elliptique
             Pairing pairing = PairingFactory.getPairing("IBE/a.properties");
@@ -153,8 +153,9 @@ public class HttpServeur {
                             URL url = HttpServeur.class.getResource("registeredUsers");
                             File save = new File(url.getPath());
                             FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                            objectOutputStream.writeObject(registeredUsers);
+                            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+								objectOutputStream.writeObject(registeredUsers);
+							}
                         }
 
                         System.out.println("Encryption of client secret key");
@@ -199,8 +200,9 @@ public class HttpServeur {
 
             File save = new File("src/server/registeredUsers");
             FileOutputStream fileOutputStream = new FileOutputStream(save,false);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(registeredUsers);
+            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+				objectOutputStream.writeObject(registeredUsers);
+			}
             System.out.println("All salts have been cleared");
         } catch (IOException e) {
             e.printStackTrace();

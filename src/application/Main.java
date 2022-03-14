@@ -61,7 +61,8 @@ public class Main extends Application {
 		this.primaryStage = primaryStage;
 		primaryStage.setTitle("Secure Mail");
 
-		serverConfig = new ServerConfig(8080, "10.56.59.208");
+
+		serverConfig = new ServerConfig(8080, "10.4.135.150");
 
 		loadUsers();
 

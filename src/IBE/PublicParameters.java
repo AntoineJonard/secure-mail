@@ -14,12 +14,15 @@ public class PublicParameters implements Serializable{
 	private byte[] p; //generateur
 	    
 	private byte[] p_pub; // clef publique du système
+	
+	private static final long serialVersionUID = 6529685098267757690L;
 
-	public PublicParameters(Element p, Element p_pub) {
+	public PublicParameters(byte[] p, byte[] p_pub) {
 		super();
-		this.p = p.toBytes();
-		this.p_pub = p_pub.toBytes();
+		this.p = p;
+		this.p_pub = p_pub;
 	}
+
 
 	public Element getP(Pairing pairing) {
 		return pairing.getG1().newElementFromBytes(p);
