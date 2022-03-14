@@ -67,7 +67,7 @@
                   </Label>
                </children>
             </HBox>
-            <HBox alignment="CENTER" layoutX="20.0" layoutY="10.0" maxWidth="175.0" onMouseClicked="#new_mail" style="-fx-background-color: #FAC437; -fx-background-radius: 25;" StackPane.alignment="CENTER_RIGHT">
+            <HBox alignment="CENTER" layoutX="20.0" layoutY="10.0" maxWidth="175.0" onMouseClicked="#newMail" style="-fx-background-color: #FAC437; -fx-background-radius: 25;" StackPane.alignment="CENTER_RIGHT">
                <children>
                   <ImageView fitHeight="34.0" fitWidth="31.0" onMouseClicked="#refresh" pickOnBounds="true" preserveRatio="true">
                      <image>

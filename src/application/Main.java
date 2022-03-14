@@ -1,12 +1,15 @@
 package application;
 	
-import java.io.IOException;
-import java.util.Objects;
+import java.io.*;
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import controller.ConnectionController;
-import controller.Controller;
-import controller.MailboxController;
+import controller.*;
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -18,13 +21,20 @@ import javax.mail.*;
 
 public class Main extends Application {
 	
-	private static Stage primaryStage;
+	private Stage primaryStage;
 	private VBox mailboxLayout;
 	private VBox connectionLayout;
 	private VBox mailLayout;
+	private VBox sendMailLayout;
 	private BorderPane rootLayout;
 
 	private User user;
+
+	private HashMap<String, byte[]> registeredUsersSalts;
+
+	private  Pairing pairing = PairingFactory.getPairing("IBE/a.properties");;
+
+	private ServerConfig serverConfig;
 
 	//emails
 
@@ -35,12 +45,25 @@ public class Main extends Application {
 	private Message[] emails;
 
 	private boolean connected = false;
+
+	private static Main singleton;
+
+	public static Main getInstance(){
+		return singleton;
+	}
 	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) throws IOException, ClassNotFoundException {
+
+		if (singleton == null)
+			singleton = this;
 		
-		Main.primaryStage = primaryStage;
-		Main.primaryStage.setTitle("Secure Mail");
+		this.primaryStage = primaryStage;
+		primaryStage.setTitle("Secure Mail");
+
+		serverConfig = new ServerConfig(8080, "10.56.59.208");
+
+		loadUsers();
 
 		initProperties();
 		
@@ -57,6 +80,17 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void loadUsers() throws IOException, ClassNotFoundException {
+		//resetPasswordHashs();
+
+		File save = new File("src/application/registeredUsers");
+
+		FileInputStream fileInputStream = new FileInputStream(save);
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+		registeredUsersSalts = (HashMap<String, byte[]>) objectInputStream.readObject();
 	}
 
 	@Override
@@ -156,8 +190,29 @@ public class Main extends Application {
 		rootLayout.setCenter(mailboxLayout);
 	}
 
-	public boolean connectAs(User user) {
-		this.user = new User("cryptoav.tp@gmail.com","vivelacrypto");
+	public void showSendMail() {
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			loader.setLocation(Main.class.getResource("../view/SendMail.fxml"));
+
+			Controller controller = new SendMailController();
+			controller.setMain(this);
+
+			loader.setController(controller);
+
+			Scene scene = new Scene(loader.load(), 900, 600);
+			Stage stage = new Stage();
+			stage.setTitle("Write a mail");
+			stage.setScene(scene);
+			stage.show();
+		} catch (IOException e) {
+			Logger logger = Logger.getLogger(getClass().getName());
+			logger.log(Level.SEVERE, "Failed to create new Window.", e);
+		}
+	}
+
+	public boolean connectAs(User user)  {
+		this.user = user;
 
 		Session session = Session.getDefaultInstance(receiveProperties);
 
@@ -179,6 +234,31 @@ public class Main extends Application {
 			System.out.println("Could not connect to the message store");
 
 			return false;
+		}
+
+		if (!registeredUsersSalts.containsKey(user.getEmail())){
+			// Generate salt
+			SecureRandom secureRandom = new SecureRandom();
+			byte salt[] = new byte[20];
+			secureRandom.nextBytes(salt);
+
+			// Add salt to list of saved users
+			registeredUsersSalts.put(user.getEmail(),salt);
+			this.user.setSalt(salt);
+
+			File save = new File("src/application/registeredUsers");
+			FileOutputStream fileOutputStream = null;
+			try {
+				fileOutputStream = new FileOutputStream(save,false);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+				objectOutputStream.writeObject(registeredUsersSalts);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Could not registered user and salt");
+				return false;
+			}
+		}else {
+			this.user.setSalt(registeredUsersSalts.get(user.getEmail()));
 		}
 
 		connected = true;
@@ -217,6 +297,24 @@ public class Main extends Application {
 		return true;
 	}
 
+	private void resetPasswordHashs(){
+		try {
+			if (registeredUsersSalts != null)
+				registeredUsersSalts.clear();
+			else
+				registeredUsersSalts = new HashMap<>();
+
+			File save = new File("src/application/registeredUsers");
+			FileOutputStream fileOutputStream = new FileOutputStream(save,false);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			objectOutputStream.writeObject(registeredUsersSalts);
+			System.out.println("All passwords hashes have been cleared");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Fail to clear passwords hashes");
+		}
+	}
+
 	public User getUser() {
 		return user;
 	}
@@ -225,7 +323,19 @@ public class Main extends Application {
 		return emails;
 	}
 
-	public static Stage getPrimaryStage() {
+	public Stage getPrimaryStage() {
 		return primaryStage;
+	}
+
+	public Properties getSendProperties() {
+		return sendProperties;
+	}
+
+	public Pairing getPairing() {
+		return pairing;
+	}
+
+	public ServerConfig getServerConfig() {
+		return serverConfig;
 	}
 }

@@ -53,7 +53,7 @@ public class MailboxController extends Controller{
     }
     
     @FXML
-    private void new_mail() {
-    	
+    private void newMail() {
+    	getMain().showSendMail();
     }
 }

@@ -48,11 +48,7 @@ public class MessageFormatCell extends ListCell<Message> {
 
             setText(from +" [ "+subject+" ] \t"+sentDate);
 
-            setOnMouseClicked(arg0 -> {
-            	
-            	showMail(message);
-
-            });
+            setOnMouseClicked(arg0 -> showMail(message));
             
             if (message_seen){
                 setFont(Font.font(null, FontWeight.NORMAL,13));

@@ -94,6 +94,9 @@ public class Mailsendreceivetest {
             myemailcontent.addBodyPart(bodypart);
             myemailcontent.addBodyPart(attachementfile);
             message.setContent(myemailcontent);
+            
+            
+            
             Transport.send(message);
 
 
