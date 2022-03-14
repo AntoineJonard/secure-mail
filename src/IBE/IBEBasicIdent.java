@@ -31,7 +31,7 @@ public class IBEBasicIdent {
 
         Element p_pub = p.duplicate().mulZn(msk); // calcule de la clef publique du système
 
-        PublicParameters pp = new PublicParameters(p, p_pub);
+        PublicParameters pp = new PublicParameters(p.toBytes(), p_pub.toBytes());
 
         return new SettingParameters(pp, msk); //instanciation d'un objet comportant les parametres du système
     }

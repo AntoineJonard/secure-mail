@@ -17,17 +17,13 @@ public class PublicParameters implements Serializable{
 
 	public PublicParameters(byte[] p, byte[] p_pub) {
 		super();
-		this.p = p.toBytes();
-		this.p_pub = p_pub.toBytes();
+		this.p = p;
+		this.p_pub = p_pub;
 	}
 
-<<<<<<< HEAD
-	public Element getP() {
-		return Element
-=======
+
 	public Element getP(Pairing pairing) {
 		return pairing.getG1().newElementFromBytes(p);
->>>>>>> 9704d4a7c490de437097c61718cbb8c113102bc6
 	}
 
 	public void setP(Element p) {
