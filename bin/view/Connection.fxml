@@ -11,6 +11,7 @@
 <?import javafx.scene.text.Font?>
 
 
+<?import javafx.scene.control.PasswordField?>
 <VBox alignment="CENTER" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Label text="Secure Mail">
@@ -59,14 +60,14 @@
                   <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
                </HBox.margin>
             </Label>
-            <TextField fx:id="password" promptText="your password">
+            <PasswordField fx:id="password" promptText="your password">
                <font>
                   <Font size="24.0" />
                </font>
                <HBox.margin>
                   <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
                </HBox.margin>
-            </TextField>
+            </PasswordField>
          </children>
       </HBox>
       <Button fx:id="connectButton" mnemonicParsing="false" onMouseClicked="#connect" text="Connect">

@@ -14,6 +14,8 @@ public class PublicParameters implements Serializable{
 	private byte[] p; //generateur
 	    
 	private byte[] p_pub; // clef publique du système
+	
+	private static final long serialVersionUID = 6529685098267757690L;
 
 	public PublicParameters(byte[] p, byte[] p_pub) {
 		super();
