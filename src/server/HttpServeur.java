@@ -10,21 +10,20 @@ import IBE.IBEBasicIdent;
 import IBE.KeyPair;
 import IBE.SettingParameters;
 import RSAFAST.AsymmetricCryptography;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.*;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,12 +77,51 @@ public class HttpServeur {
             System.out.println("MSK:" + sp.getMsk());
             System.out.println("---------------------------------");
 
-            HttpServer server = HttpServer.create(s, 1000);
+            // HttpServer server = HttpServer.create(s, 1000);
+            HttpsServer server = HttpsServer.create(s, 1000);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            char[] password = "password".toCharArray();
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            FileInputStream fis = new FileInputStream("src/server/keystore.jks");
+            ks.load(fis, password);
+
+            // setup the key manager factory
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, password);
+
+            // setup the trust manager factory
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+
+            // setup the HTTPS context and parameters
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+                @Override
+                public void configure(HttpsParameters params) {
+                    try {
+                        // initialise the SSL context
+                        SSLContext c = getSSLContext();
+                        SSLEngine engine = c.createSSLEngine();
+                        params.setNeedClientAuth(false);
+                        params.setCipherSuites(engine.getEnabledCipherSuites());
+                        params.setProtocols(engine.getEnabledProtocols());
+
+                        // Set the SSL parameters
+                        SSLParameters sslParameters = c.getSupportedSSLParameters();
+                        params.setSSLParameters(sslParameters);
+
+                    } catch (Exception ex) {
+                        System.out.println("Failed to create HTTPS port");
+                        System.out.println(ex.getMessage());
+                    }
+                }
+            });
             System.out.println(server.getAddress());
 
             // Service to get public parameters
             server.createContext("/servicePp", new HttpHandler() {
                 public void handle(HttpExchange he) throws IOException {
+                    System.out.println("test");
                     byte[] bytes = getObjectBytes(sp.getPp());
                     assert bytes != null;
                     he.sendResponseHeaders(200, bytes.length);
@@ -187,6 +225,16 @@ public class HttpServeur {
             server.start();
         } catch (IOException ex) {
             Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableKeyException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
         }
 
     }
