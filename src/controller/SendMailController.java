@@ -168,7 +168,7 @@ public class SendMailController extends Controller {
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
 		File selectedFile = fileChooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 
-		if (selectedFile.length()/1024 < 15) {
+		if (selectedFile.length()/1048576 < 15) {
 			attachmentsPaths.add(selectedFile.getPath());
 
 			Label label = new Label();
@@ -185,7 +185,7 @@ public class SendMailController extends Controller {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Error");
 			alert.setHeaderText("Impossible to send mail");
-			alert.setContentText("File is too big (size > 20 MB)");
+			alert.setContentText("File is too big (size > 15 MB)");
 			alert.showAndWait();
 		}
 	}
