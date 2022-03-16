@@ -86,6 +86,7 @@ public class SendMailController extends Controller {
 				Multipart myemailcontent = new MimeMultipart();
 				MimeBodyPart bodypart = new MimeBodyPart();
 				bodypart.setText(message.getText());
+				myemailcontent.addBodyPart(bodypart);
 
 				if (!attachmentsPaths.isEmpty()){
 					
@@ -104,8 +105,11 @@ public class SendMailController extends Controller {
 
 					urlConnInputStream.close();
 					
-					MimeBodyPart attachementfile = new MimeBodyPart();
+					MimeBodyPart attachementfile;
+
 					for (String attachement_path : attachmentsPaths){
+						
+						attachementfile = new MimeBodyPart();
 
 						File originalFile = new File(attachement_path);
 
@@ -130,7 +134,7 @@ public class SendMailController extends Controller {
 							System.out.println("Error while encryting originalFile, sending uncrypted originalFile");
 							attachementfile.attachFile(attachement_path);
 						}
-						myemailcontent.addBodyPart(bodypart);
+						
 						myemailcontent.addBodyPart(attachementfile);
 					}
 				}
@@ -164,17 +168,25 @@ public class SendMailController extends Controller {
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
 		File selectedFile = fileChooser.showOpenDialog(Main.getInstance().getPrimaryStage());
 
-		attachmentsPaths.add(selectedFile.getPath());
+		if (selectedFile.length()/1024 < 15) {
+			attachmentsPaths.add(selectedFile.getPath());
 
-		Label label = new Label();
+			Label label = new Label();
 
-		label.setText(selectedFile.getName());
-		label.setTextFill(Color.WHITE);
-		label.setStyle("-fx-background-color: #a0a0a0;"
-				+ "-fx-padding: 5px;"
-				+ "-fx-background-radius: 15 15 15 15;");
-		label.setFont(new Font(null, 20));
+			label.setText(selectedFile.getName());
+			label.setTextFill(Color.WHITE);
+			label.setStyle("-fx-background-color: #a0a0a0;"
+					+ "-fx-padding: 5px;"
+					+ "-fx-background-radius: 15 15 15 15;");
+			label.setFont(new Font(null, 20));
 
-		attachments.getChildren().add(label);
+			attachments.getChildren().add(label);
+		}else {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Error");
+			alert.setHeaderText("Impossible to send mail");
+			alert.setContentText("File is too big (size > 20 MB)");
+			alert.showAndWait();
+		}
 	}
 }
