@@ -88,6 +88,22 @@ public class SendMailController extends Controller {
 				bodypart.setText(message.getText());
 
 				if (!attachmentsPaths.isEmpty()){
+					
+					URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
+
+					URLConnection urlConn = url.openConnection();
+					urlConn.setDoInput(true);
+					urlConn.setDoOutput(false);
+
+					InputStream urlConnInputStream = urlConn.getInputStream();
+					ObjectInputStream objectInputStream = new ObjectInputStream(urlConnInputStream);
+
+					PublicParameters pp = (PublicParameters) objectInputStream.readObject();
+
+					System.out.println("Parameters from server :" + pp.getP(Main.getInstance().getPairing()));
+
+					urlConnInputStream.close();
+					
 					MimeBodyPart attachementfile = new MimeBodyPart();
 					for (String attachement_path : attachmentsPaths){
 
@@ -98,21 +114,6 @@ public class SendMailController extends Controller {
 						byte[] filebytes = new byte[in.available()];
 
 						in.read(filebytes);
-
-						URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
-
-						URLConnection urlConn = url.openConnection();
-						urlConn.setDoInput(true);
-						urlConn.setDoOutput(false);
-
-						InputStream urlConnInputStream = urlConn.getInputStream();
-						ObjectInputStream objectInputStream = new ObjectInputStream(urlConnInputStream);
-
-						PublicParameters pp = (PublicParameters) objectInputStream.readObject();
-
-						System.out.println("Parameters from server :" + pp.getP(Main.getInstance().getPairing()));
-
-						urlConnInputStream.close();
 
 						IBEcipher ibecipher = IBEBasicIdent.IBEencryption(Main.getInstance().getPairing(), pp, filebytes, recipient.getText());
 
@@ -129,9 +130,9 @@ public class SendMailController extends Controller {
 							System.out.println("Error while encryting originalFile, sending uncrypted originalFile");
 							attachementfile.attachFile(attachement_path);
 						}
+						myemailcontent.addBodyPart(bodypart);
+						myemailcontent.addBodyPart(attachementfile);
 					}
-					myemailcontent.addBodyPart(bodypart);
-					myemailcontent.addBodyPart(attachementfile);
 				}
 
 				mail.setContent(myemailcontent);
