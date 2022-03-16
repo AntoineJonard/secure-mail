@@ -126,7 +126,7 @@ public class HttpServeur {
                     assert bytes != null;
                     he.sendResponseHeaders(200, bytes.length);
 
-                    // Sending plublic parameters to client
+                    // Sending public parameters to client
                     OutputStream os = he.getResponseBody();
                     os.write(bytes);
                     System.out.println("Public parameters sent ("+ Arrays.toString(bytes) +")");

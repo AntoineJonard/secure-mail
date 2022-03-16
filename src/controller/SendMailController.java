@@ -99,7 +99,7 @@ public class SendMailController extends Controller {
 
 						in.read(filebytes);
 
-						URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
+						URL url = new URL("https://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/servicePp");
 
 						URLConnection urlConn = url.openConnection();
 						urlConn.setDoInput(true);

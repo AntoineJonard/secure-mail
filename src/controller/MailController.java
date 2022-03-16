@@ -130,7 +130,7 @@ public class MailController extends Controller{
 
         try {
 
-            URL url = new URL("http://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
+            URL url = new URL("https://"+Main.getInstance().getServerConfig().getAdress()+":"+Main.getInstance().getServerConfig().getPort()+"/serviceSk?email=cryptoav.tp@gmail.com");
 
             URLConnection urlConn = url.openConnection();
             urlConn.setDoInput(true);
